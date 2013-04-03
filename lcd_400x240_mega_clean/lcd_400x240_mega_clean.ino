@@ -1,13 +1,10 @@
+// Testing 32' TFT LCD 240x400 Display.
+// Based on the:
 // UTFT_Demo_400x240 (C)2012 Henning Karlsen
 // web: http://www.henningkarlsen.com/electronics
-//
-// This program is a demo of how to use most of the functions
-// of the library with a supported display modules.
-//
-// This demo was made for modules with a screen resolution 
-// of 400x240 pixels.
-//
-// This program requires the UTFT library.
+
+// Modified by
+// Helge Langehaug
 //
 
 #include <UTFT.h>
@@ -35,19 +32,15 @@ void setup()
   myGLCD.setFont(SmallFont);
   
   
-    myGLCD.clrScr();
+  myGLCD.clrScr();
 
   myGLCD.setColor(255, 255, 255);
 
   myGLCD.print("Hello World !!!", CENTER, 100);
   
   if (!bmp.begin()) {
-    
-      myGLCD.print("Could not find a valid BMP085 sensor2", CENTER, 150);
- 
-  
-	 
-	while (1) {}
+      myGLCD.print("Could not find a valid BMP085 sensor. Anything connected ?", CENTER, 150);
+      while (1) {}
   }
   
   
