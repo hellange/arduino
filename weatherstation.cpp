@@ -38,7 +38,7 @@ void setup()
 
   myGLCD.setColor(255, 255, 255);
 
-  myGLCD.print("Weather Station V0.2", CENTER, 80);
+  myGLCD.print("Weather Station V0.3", CENTER, 80);
 
   myGLCD.setColor(255, 0, 0);
   if (!bmp.begin()) {
