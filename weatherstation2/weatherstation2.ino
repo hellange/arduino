@@ -18,14 +18,15 @@ extern uint8_t BigFont[];
 
 // Using Arduino Mega and 3.2' TFT LCD 240x400 Display
 UTFT myGLCD(TFT01_32WD,38,39,40,41);
-UTouch      myTouch(6,5,4,3,2);
+UTouch myTouch(6,5,4,3,2);
 int counter = 0;
 int x, y;
 Adafruit_BMP085 bmp;
 
 #define DS1307_ADDRESS 0x68
 byte zero = 0x00;
-
+int p= 1000;
+int delta = 1;
 void setup(){
   Wire.begin();
   Serial.begin(9600);
@@ -35,14 +36,15 @@ void setup(){
   initGraphics();
   myTouch.InitTouch();
   myTouch.setPrecision(PREC_MEDIUM);
-  myGLCD.print("I2C DEVICES !!!", 20, 80,315);
   
   printDate();
-  showPressure();
+   
   
-  i2c_scanner();
+  //barGraph();
+  //i2c_scanner();
 }
 
+int secondSinceLastHistory = 9999;
 void loop(){
   printDate();
   showPressure();
@@ -51,15 +53,92 @@ void loop(){
     checkTouch();
     delay(50);
   }
+  
+  // every 30 minutes
+  if (secondSinceLastHistory > 60 * 30) {
+    secondSinceLastHistory = 0;
+    addHistoryValue(getMbar());
+  }
+  secondSinceLastHistory += 1;
+  /*
+  if (p>1040){
+    delta = -3;
+  } else if (p<960) {
+     delta = 4;
+  }
+    p=p+delta;
+  */ 
 }
 
 //******************* GRAPHICS INIT ***************************
 void initGraphics() {
   myGLCD.InitLCD();
   myGLCD.setFont(SmallFont);
-  myGLCD.clrScr();
+  myGLCD.fillScr(240,240,240);
+  myGLCD.setBackColor(240,240,240);
   myGLCD.setColor(0, 255, 0);
 }
+
+//******************* BARGRAPH ************************
+void drawBar(int index, int value, int valueOffset){
+  int maxValue = 80;
+  
+  // lower left corner coordinates for the bargrah
+  int yaxis = 100;
+  int xaxis = 110;
+  
+  int margin = 2;
+  int width = 6;
+  
+  int height = value - valueOffset;
+  
+  int x1 = index * width;
+  int x2 = x1 + width - margin;
+  
+  // draw it
+  myGLCD.setColor(0,0,255);
+  myGLCD.fillRect(xaxis + x1, yaxis, xaxis + x2, yaxis-height);
+  
+  // clear top (to replace previous bar if it was higher)
+  myGLCD.setColor(240,240,240);
+  myGLCD.fillRect(xaxis + x1, yaxis - maxValue, xaxis + x2, yaxis-height);
+
+  myGLCD.setColor(0,0,150);
+  myGLCD.drawRect(xaxis, yaxis, xaxis + 24 * width, yaxis - maxValue);
+
+
+
+}
+
+
+//int history[] = {1008,1007,1006,1004,1003,998,1003,1006,1010,1000,990,980,970,960,970,980,990,1000,999,998,997,996,995,994};
+int history[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+void addHistoryValue(int value){
+
+  // shift left
+  for (int i = 1; i<24; i++){
+    history[i-1] = history[i];
+  }
+  history[23] = value;
+  
+  // given max history 1040, min history 960, total of 80 points
+  // convert to bar scale
+  //int bars[24];
+  //for (int i = 1; i<24; i++){
+  //  bars[i] = history[i] - 960; // given 950 is the lowest value we can possibly have in history
+  //}
+  
+  drawMillibarGraph(history, 24);
+}
+
+
+void drawMillibarGraph(int values[], int nr_of_values){
+  
+  for (int i = 0; i< nr_of_values; i++){
+    drawBar(i,values[i], 960); // value offset 960 gives us 0 in graph for 960mBar
+  }
+}
+
 
 //******************* TOUCH ***************************
 void checkTouch(){
@@ -127,6 +206,7 @@ void printDate(){
   int year = bcdToDec(Wire.read());
 
   //print the date EG   3/1/11 23:59:59
+  /*
   Serial.print(month);
   Serial.print("/");
   Serial.print(monthDay);
@@ -138,19 +218,24 @@ void printDate(){
   Serial.print(minute);
   Serial.print(":");
   Serial.println(second);
-  myGLCD.setColor(0, 255, 0);
-
+  */
   myGLCD.setFont(BigFont);
-  myGLCD.printNumI(monthDay, 20, 110, 2);
-  myGLCD.print("/", 50, 110);
-  myGLCD.printNumI(month, 70, 110, 2);
-  myGLCD.print("/", 100, 110);
-  myGLCD.printNumI(year, 120, 110, 2);
-  myGLCD.printNumI(hour, 190, 110, 2 ,'0');
-  myGLCD.print(":", 225, 110);
-  myGLCD.printNumI(minute, 245, 110, 2 ,'0');
-  myGLCD.print(":", 280, 110);
-  myGLCD.printNumI(second, 300, 110, 2 ,'0');
+
+  int y = 150;
+  myGLCD.setColor(150,150,150);
+  myGLCD.printNumI(monthDay, 120, y, 2);
+  myGLCD.print("/", 150, y);
+  myGLCD.printNumI(month, 165, y, 2);
+  myGLCD.print("/", 195, y);
+  myGLCD.printNumI(year, 210, y, 2);
+  
+  y = 130;
+  myGLCD.setColor(0, 0, 0);
+  myGLCD.printNumI(hour, 120, y, 2 ,'0');
+  myGLCD.print(":", 150, y);
+  myGLCD.printNumI(minute, 165, y, 2 ,'0');
+  myGLCD.print(":", 195, y);
+  myGLCD.printNumI(second, 210, y, 2 ,'0');
 }
 
 
@@ -213,12 +298,16 @@ void showPressure()
   myGLCD.setFont(BigFont);
   if (!bmp.begin()) {
     myGLCD.print("Could not find a valid BMP085 pressure sensor.", CENTER, 0);
-    myGLCD.print("Anything connected at all ???", CENTER, 25);
+    myGLCD.print("Anything connected at all ???", CENTER, 45);
   } else {
-    myGLCD.setColor(255, 255, 255);
-    myGLCD.printNumF(bmp.readPressure()/100, 1, CENTER, 40);
-    myGLCD.print("mBar", CENTER, 55);
+    myGLCD.setColor(0, 0, 255);
+    myGLCD.printNumF(getMbar(), 1, 280, 40);
+    myGLCD.print("mBar", 280, 55);
   }
+}
+
+float getMbar(){
+  return bmp.readPressure()/100;
 }
 
 
