@@ -1,17 +1,14 @@
-// Weather Station with 32' TFT LCD 240x400 Display.
-// LCD driver driver based on:
-// UTFT_Demo_400x240 (C)2012 Henning Karlsen
-// web: http://www.henningkarlsen.com/electronics
-
-// BMP085 Sensor driver based on code found on Adafruit web pages.
-
+// Weather Station with LCD TFT display
+// Based on 
+//   Graphics library (C)2012 Henning Karlsen
+//   Adafruit_BMP085 by Adafruit
+//   i2c_scanner from various sources...
 // Author:
 // Helge Langehaug
 
-//#include <weatherstation.h>
-#include <UTFT.h>
-#include <UTouch.h>
-#include <Adafruit_BMP085.h>
+#include <UTFT.h>    // http://www.henningkarlsen.com/electronics
+#include <UTouch.h>  // http://www.henningkarlsen.com/electronics
+#include <Adafruit_BMP085.h> // https://github.com/adafruit/Adafruit-BMP085-Library
 #include <Wire.h>
 
 //
@@ -26,46 +23,8 @@ int counter = 0;
 int x, y;
 Adafruit_BMP085 bmp;
 
-
-// --------------------------------------
-// i2c_scanner
-//
-// Version 1
-//    This program (or code that looks like it)
-//    can be found in many places.
-//    For example on the Arduino.cc forum.
-//    The original author is not know.
-// Version 2, Juni 2012, Using Arduino 1.0.1
-//     Adapted to be as simple as possible by Arduino.cc user Krodal
-// Version 3, Feb 26  2013
-//    V3 by louarnold
-// Version 4, March 3, 2013, Using Arduino 1.0.3
-//    by Arduino.cc user Krodal.
-//    Changes by louarnold removed.
-//    Scanning addresses changed from 0...127 to 1...119,
-//    according to the i2c scanner by Nick Gammon
-//    http://www.gammon.com.au/forum/?id=10896
-// Version 5, March 28, 2013
-//    As version 4, but address scans now to 127.
-//    A sensor seems to use address 120.
-// 
-//
-// This sketch tests the standard 7-bit addresses
-// Devices with higher bit address might not be seen properly.
-//
-
-#include <Wire.h>
-
-/* Downloaded from http://projectsfromtech.blogspot.com/
-*Connect SCL, SDA, Vcc, and GND
-*Open Serial Monitor and enjoy!
-*/
-
-//Arduino 1.0+ Only
-
-#include "Wire.h"
 #define DS1307_ADDRESS 0x68
-  byte zero = 0x00;
+byte zero = 0x00;
 
 void setup(){
   Wire.begin();
@@ -78,11 +37,10 @@ void setup(){
   myTouch.setPrecision(PREC_MEDIUM);
   myGLCD.print("I2C DEVICES !!!", 20, 80,315);
   
-  
   printDate();
   showPressure();
   
-  scan();
+  i2c_scanner();
 }
 
 void loop(){
@@ -95,6 +53,15 @@ void loop(){
   }
 }
 
+//******************* GRAPHICS INIT ***************************
+void initGraphics() {
+  myGLCD.InitLCD();
+  myGLCD.setFont(SmallFont);
+  myGLCD.clrScr();
+  myGLCD.setColor(0, 255, 0);
+}
+
+//******************* TOUCH ***************************
 void checkTouch(){
   if (myTouch.dataAvailable()) {
     myTouch.read();
@@ -106,6 +73,7 @@ void checkTouch(){
   }
 }
 
+//******************* CLOCK/DATE ***********************
 byte decToBcd(byte val){
 // Convert normal decimal numbers to binary coded decimal
   return ( (val/10*16) + (val%10) );
@@ -170,32 +138,26 @@ void printDate(){
   Serial.print(minute);
   Serial.print(":");
   Serial.println(second);
-    myGLCD.setColor(0, 255, 0);
+  myGLCD.setColor(0, 255, 0);
 
   myGLCD.setFont(BigFont);
-    myGLCD.printNumI(monthDay, 20, 110, 2);
-    
-        myGLCD.print("/", 50, 110);
-
-    myGLCD.printNumI(month, 70, 110, 2);
-
-        myGLCD.print("/", 100, 110);
-
-    myGLCD.printNumI(year, 120, 110, 2);
-
-    myGLCD.printNumI(hour, 190, 110, 2 ,'0');
-        myGLCD.print(":", 225, 110);
-
-    myGLCD.printNumI(minute, 245, 110, 2 ,'0');
-    myGLCD.print(":", 280, 110);
-    myGLCD.printNumI(second, 300, 110, 2 ,'0');
+  myGLCD.printNumI(monthDay, 20, 110, 2);
+  myGLCD.print("/", 50, 110);
+  myGLCD.printNumI(month, 70, 110, 2);
+  myGLCD.print("/", 100, 110);
+  myGLCD.printNumI(year, 120, 110, 2);
+  myGLCD.printNumI(hour, 190, 110, 2 ,'0');
+  myGLCD.print(":", 225, 110);
+  myGLCD.printNumI(minute, 245, 110, 2 ,'0');
+  myGLCD.print(":", 280, 110);
+  myGLCD.printNumI(second, 300, 110, 2 ,'0');
 }
 
 
 
 
-
-void scan()
+//******************* I2C SCANNING ***********************
+void i2c_scanner()
 {
     myGLCD.setColor(255, 0, 0);
 
@@ -224,7 +186,7 @@ void scan()
         Serial.print("0");
       Serial.print(address,HEX);
       Serial.println("  !");
-myGLCD.printNumI(address, 30 + nDevices*30, 170);
+      myGLCD.printNumI(address, 30 + nDevices*30, 170);
       nDevices++;
     }
     else if (error==4) 
@@ -233,8 +195,6 @@ myGLCD.printNumI(address, 30 + nDevices*30, 170);
       if (address<16) 
         Serial.print("0");
       Serial.println(address,HEX);
-
-
     }    
   }
   if (nDevices == 0){
@@ -246,35 +206,19 @@ myGLCD.printNumI(address, 30 + nDevices*30, 170);
 
 }
 
-void initGraphics() {
-  myGLCD.InitLCD();
-  myGLCD.setFont(SmallFont);
 
-
-  myGLCD.clrScr();
-
-
-  myGLCD.setColor(0, 255, 0);
-}
-
-
-
+//******************* PRESSURE ***************************
 void showPressure()
 {
-  
-       myGLCD.setFont(BigFont);
-
+  myGLCD.setFont(BigFont);
   if (!bmp.begin()) {
-      myGLCD.print("Could not find a valid BMP085 pressure sensor.", CENTER, 0);
-      myGLCD.print("Anything connected at all ???", CENTER, 25);
+    myGLCD.print("Could not find a valid BMP085 pressure sensor.", CENTER, 0);
+    myGLCD.print("Anything connected at all ???", CENTER, 25);
   } else {
     myGLCD.setColor(255, 255, 255);
     myGLCD.printNumF(bmp.readPressure()/100, 1, CENTER, 40);
-            myGLCD.print("mBar", CENTER, 55);
-
+    myGLCD.print("mBar", CENTER, 55);
   }
-
-
 }
 
 
