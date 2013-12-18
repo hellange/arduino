@@ -35,8 +35,11 @@ void setup(){
   printDate();
   initGraphics();
   myTouch.InitTouch();
-  myTouch.setPrecision(PREC_MEDIUM);
-  
+  myTouch.setPrecision(PREC_LOW);
+  //myTouch.setPrecision(PREC_MEDIUM);
+  //myTouch.setPrecision(PREC_HI);
+  //myTouch.setPrecision(PREC_EXTREME);
+
   printDate();
    
   
@@ -144,6 +147,7 @@ void drawMillibarGraph(int values[], int nr_of_values){
 void checkTouch(){
   if (myTouch.dataAvailable()) {
     myTouch.read();
+      myGLCD.setColor(0,255,0);
       x=myTouch.getX();
       y=myTouch.getY();
       myGLCD.printNumI(x, 0, 0, 3);
