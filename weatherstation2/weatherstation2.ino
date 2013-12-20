@@ -84,19 +84,29 @@ void initGraphics() {
 
 //******************* BARGRAPH ************************
 void drawBar(int index, int value, int valueOffset){
-  int maxValue = 80;
+  int maxValue = 100;
   
   // lower left corner coordinates for the bargrah
-  int yaxis = 100;
+  int yaxis = 105;
   int xaxis = 110;
   
   int margin = 2;
   int width = 6;
   
   int height = value - valueOffset;
-  
+  if (height < 1){
+    height = 0;
+  }
+  //int height = value - valueOffset;
+
   int x1 = index * width;
   int x2 = x1 + width - margin;
+  
+  
+  // given value range (after offset) is between 0 and 80
+  // and display height = 100, adjust to full display range
+  height = height/0.8;
+
   
   // draw it
   myGLCD.setColor(0,0,255);
@@ -114,8 +124,7 @@ void drawBar(int index, int value, int valueOffset){
 }
 
 
-//int history[] = {1008,1007,1006,1004,1003,998,1003,1006,1010,1000,990,980,970,960,970,980,990,1000,999,998,997,996,995,994};
-int history[] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int history[] = {960,1000,1040,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 void addHistoryValue(int value){
 
   // shift left
