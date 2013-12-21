@@ -288,7 +288,10 @@ void printDate(){
   
   myGLCD.printNumI(phase2, 10, 70);
   //myGLCD.print(strs[phase2], 10, 105);
-    myGLCD.print(phaseText, 10, 105);
+  
+    myGLCD.setFont(SmallFont);
+
+    myGLCD.print(phaseText, 10, 115);
 
   //print the date EG   3/1/11 23:59:59
   /*
@@ -306,7 +309,15 @@ void printDate(){
   */
   myGLCD.setFont(BigFont);
 
-  int y = 150;
+  y = 150;
+  myGLCD.setColor(0, 0, 0);
+  myGLCD.printNumI(hour, 120, y, 2 ,'0');
+  myGLCD.print(":", 150, y);
+  myGLCD.printNumI(minute, 165, y, 2 ,'0');
+  myGLCD.print(":", 195, y);
+  myGLCD.printNumI(second, 210, y, 2 ,'0');
+  
+  int y = 170;
   myGLCD.setColor(150,150,150);
   myGLCD.printNumI(monthDay, 120, y, 2);
   myGLCD.print("/", 150, y);
@@ -314,13 +325,7 @@ void printDate(){
   myGLCD.print("/", 195, y);
   myGLCD.printNumI(year, 210, y, 2);
   
-  y = 130;
-  myGLCD.setColor(0, 0, 0);
-  myGLCD.printNumI(hour, 120, y, 2 ,'0');
-  myGLCD.print(":", 150, y);
-  myGLCD.printNumI(minute, 165, y, 2 ,'0');
-  myGLCD.print(":", 195, y);
-  myGLCD.printNumI(second, 210, y, 2 ,'0');
+
 }
 
 
