@@ -314,8 +314,14 @@ void showPressure()
     myGLCD.print("Anything connected at all ???", CENTER, 45);
   } else {
     myGLCD.setColor(0, 0, 255);
-    myGLCD.printNumF(getMbar(), 1, 280, 40);
-    myGLCD.print("mBar", 280, 55);
+    myGLCD.printNumF(getMbar(), 1, 270, 30);
+    myGLCD.print("mBar", 270, 45);
+    
+    myGLCD.print("Temp:", 270, 65);
+    myGLCD.printNumF(bmp.readTemperature(), 1, 270, 80);
+    byte degree = 176;
+    myGLCD.print(degree, 1, 380, 80);
+
   }
 }
 
