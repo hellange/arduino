@@ -47,8 +47,12 @@ void setup(){
   //i2c_scanner();
 }
 
+bool menuMode = false;
+
 int secondSinceLastHistory = 9999;
 void loop(){
+                myGLCD.setBackColor(255,255,255);
+
   printDate();
   showPressure();
   
@@ -151,11 +155,41 @@ void drawMillibarGraph(int values[], int nr_of_values){
   }
 }
 
-
+boolean pressMode = false;
 //******************* TOUCH ***************************
 void checkTouch(){
-  if (myTouch.dataAvailable()) {
-    myTouch.read();
+  bool dataAvailable = myTouch.dataAvailable();
+  if (dataAvailable && pressMode == false) {
+    pressMode = true;
+    if (menuMode == false) {
+       menuMode = true;
+       myGLCD.setColor(0,0,0);
+       myGLCD.fillRect(0,240,399,200);
+       myGLCD.setColor(0,255,0);
+                     myGLCD.setBackColor(0,255,0);
+
+       myGLCD.print("Menu On ", 170, 210);
+
+    } else {
+      menuMode = false;
+             myGLCD.setColor(255,255,255);
+
+             myGLCD.fillRect(0,240,399,200);
+              myGLCD.setColor(0,255,0);
+
+              myGLCD.setBackColor(0,255,0);
+
+       myGLCD.print("Menu Off", 170, 210);
+    }
+  } else if (dataAvailable && pressMode == true){
+    // not released yet...
+  } else {
+    // released...
+    pressMode = false;
+  }
+  /*
+  else {
+      myTouch.read();
       myGLCD.setColor(0,255,0);
       x=myTouch.getX();
       y=myTouch.getY();
@@ -163,6 +197,7 @@ void checkTouch(){
       myGLCD.printNumI(y, 50, 0, 3);
       myGLCD.fillCircle(x,y,10);
   }
+  */
 }
 
 //******************* CLOCK/DATE ***********************
@@ -319,8 +354,7 @@ void showPressure()
     
     myGLCD.print("Temp:", 270, 65);
     myGLCD.printNumF(bmp.readTemperature(), 1, 270, 80);
-    byte degree = 176;
-    myGLCD.print(degree, 1, 380, 80);
+    
 
   }
 }
