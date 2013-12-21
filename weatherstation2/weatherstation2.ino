@@ -161,12 +161,14 @@ void checkTouch(){
   bool dataAvailable = myTouch.dataAvailable();
   if (dataAvailable && pressMode == false) {
     pressMode = true;
+    int menuHeight=150;
     if (menuMode == false) {
+      
        menuMode = true;
        myGLCD.setColor(0,0,0);
-       myGLCD.fillRect(0,240,399,200);
+       myGLCD.fillRect(0,240,399,240-menuHeight);
        myGLCD.setColor(0,255,0);
-                     myGLCD.setBackColor(0,255,0);
+                     myGLCD.setBackColor(0,0,0);
 
        myGLCD.print("Menu On ", 170, 210);
 
@@ -174,10 +176,10 @@ void checkTouch(){
       menuMode = false;
              myGLCD.setColor(255,255,255);
 
-             myGLCD.fillRect(0,240,399,200);
+             myGLCD.fillRect(0,240,399,240-menuHeight);
               myGLCD.setColor(0,255,0);
 
-              myGLCD.setBackColor(0,255,0);
+              myGLCD.setBackColor(255,255,255);
 
        myGLCD.print("Menu Off", 170, 210);
     }
@@ -252,6 +254,41 @@ void printDate(){
   int monthDay = bcdToDec(Wire.read());
   int month = bcdToDec(Wire.read());
   int year = bcdToDec(Wire.read());
+
+
+  
+  char phaseText[30];
+  float phase = GetPhase(2000+year, month, monthDay, phaseText);
+
+  myGLCD.setColor(100,100,100);
+  myGLCD.print("Moon:", 10,30);
+  myGLCD.printNumF(phase, 2, 10, 50);
+    
+  int phase2 = moon_phase(2000+year, month, monthDay);
+  
+  
+
+   /*
+      calculates the moon phase (0-7), accurate to 1 segment.
+      0 = > new moon.
+      4 => full moon.
+      */
+      /*
+  char strs[7][24];
+
+  strcpy(strs[0], "New            XXXXXXXX"); 
+  strcpy(strs[1], "Waxing Cresent XXXXXX__");
+  strcpy(strs[2], "First Quarter  XXXX____"); 
+  strcpy(strs[3], "Waxing Gibbous XX______");  
+  strcpy(strs[4], "Full           ________"); 
+  strcpy(strs[5], "Waning Gibbous ______XX");  
+  strcpy(strs[6], "Last Quarter   ____XXXX");  
+  strcpy(strs[7], "Waning Cresent __XXXXXX");  
+  */
+  
+  myGLCD.printNumI(phase2, 10, 70);
+  //myGLCD.print(strs[phase2], 10, 105);
+    myGLCD.print(phaseText, 10, 105);
 
   //print the date EG   3/1/11 23:59:59
   /*
@@ -363,5 +400,118 @@ float getMbar(){
   return bmp.readPressure()/100;
 }
 
+// Ref:http://www.nano-reef.com/topic/217305-a-lunar-phase-function-for-the-arduino/
+float GetPhase(int nYear, int nMonth, int nDay, char *phaseText) // calculate the current phase of the moon
+{
+float phase;
+double AG, IP;
+long YY, MM, K1, K2, K3, JD;
+YY = nYear - floor((12 - nMonth) / 10);
+MM = nMonth + 9;
+if (MM >= 12)
+{
+MM = MM - 12;
+}
+K1 = floor(365.25 * (YY + 4712));
+K2 = floor(30.6 * MM + 0.5);
+K3 = floor(floor((YY / 100) + 49) * 0.75) - 38;
+JD = K1 + K2 + nDay + 59;
+if (JD > 2299160)
+{
+JD = JD - K3;
+}
+IP = MyNormalize((JD - 2451550.1) / 29.530588853);
+AG = IP*29.53;
+phase = 0;
+if ((AG < 1.84566) && (phase == 0))
+{
+phase = 0; //new; 0% illuminated
+strcpy(phaseText,"New              XXXXXXXXXX");
+}
+if ((AG < 5.53699) && (phase == 0))
+{
+phase = .25; //Waxing crescent; 25% illuminated
+strcpy(phaseText,"Waxing crescent  XXXXXX__");
+}
+if ((AG < 9.922831) && (phase == 0))
+{
+phase = .50; //First quarter; 50% illuminated
+strcpy(phaseText,"First quarter    XXXX____");
+
+}
+if ((AG < 12.91963) && (phase == 0))
+{
+phase = .75; //Waxing gibbous; 75% illuminated
+strcpy(phaseText,"Waxing gibbous   XX______");
+
+}
+if ((AG < 16.61096) && (phase == 0))
+{
+phase = 1; //Full; 100% illuminated
+strcpy(phaseText,"Full             ________");
+
+}
+if ((AG < 20.30228) && (phase == 0))
+{
+phase = .75; //Waning gibbous; 75% illuminated
+strcpy(phaseText,"Waning gibbous   ______XX");
+
+}
+if ((AG < 23.99361) && (phase == 0))
+{
+phase = .50; //Last quarter; 50% illuminated
+strcpy(phaseText,"Last quarter     ____XXXX");
+
+}
+if ((AG < 27.68493) && (phase == 0))
+{
+phase = .25; //Waning crescent; 25% illuminated
+strcpy(phaseText,"Waning crescent  __XXXXXX");
+
+}
+if (phase == 0)
+{
+phase = 0; //default to new; 0% illuminated
+strcpy(phaseText,"New              XXXXXXXX");
+
+}
+return phase;
+}
+
+double MyNormalize(double v)
+{
+v = v - floor(v);
+if (v < 0)
+v = v + 1;
+return v;
+} 
+
+int moon_phase(int y, int m, int d)
+{
+    /*
+      calculates the moon phase (0-7), accurate to 1 segment.
+      0 = > new moon.
+      4 => full moon.
+      */
+
+    int c,e;
+    double jd;
+    int b;
+
+    if (m < 3) {
+        y--;
+        m += 12;
+    }
+    ++m;
+    c = 365.25*y;
+    e = 30.6*m;
+    jd = c+e+d-694039.09;  /* jd is total days elapsed */
+    jd /= 29.53;           /* divide by the moon cycle (29.53 days) */
+    b = jd;		   /* int(jd) -> b, take integer part of jd */
+    jd -= b;		   /* subtract integer part to leave fractional part of original jd */
+    b = jd*8 + 0.5;	   /* scale fraction from 0-8 and round by adding 0.5 */
+    b = b & 7;		   /* 0 and 8 are the same so turn 8 into 0 */
+    return b;
+}
 
 
