@@ -256,57 +256,25 @@ void printDate(){
   int year = bcdToDec(Wire.read());
 
 
-  
-  char phaseText[30];
-  float phase = GetPhase(2000+year, month, monthDay, phaseText);
-
-  myGLCD.setColor(100,100,100);
-  myGLCD.print("Moon:", 10,30);
-  myGLCD.printNumF(phase, 2, 10, 50);
-    
-  int phase2 = moon_phase(2000+year, month, monthDay);
-  
-  
-
-   /*
+  /*  ANY GOOD ???????
       calculates the moon phase (0-7), accurate to 1 segment.
       0 = > new moon.
       4 => full moon.
-      */
-      /*
-  char strs[7][24];
-
-  strcpy(strs[0], "New            XXXXXXXX"); 
-  strcpy(strs[1], "Waxing Cresent XXXXXX__");
-  strcpy(strs[2], "First Quarter  XXXX____"); 
-  strcpy(strs[3], "Waxing Gibbous XX______");  
-  strcpy(strs[4], "Full           ________"); 
-  strcpy(strs[5], "Waning Gibbous ______XX");  
-  strcpy(strs[6], "Last Quarter   ____XXXX");  
-  strcpy(strs[7], "Waning Cresent __XXXXXX");  
   */
-  
+  int phase2 = moon_phase(2000+year, month, monthDay);
   myGLCD.printNumI(phase2, 10, 70);
-  //myGLCD.print(strs[phase2], 10, 105);
+
   
-    myGLCD.setFont(SmallFont);
+  /* Another calculation, seems to work */
+  char phaseText[30];
+  float phase = GetPhase(2000+year, month, monthDay, phaseText);
+  myGLCD.setColor(100,100,100);
+  myGLCD.print("Moon:", 10,30);
+  myGLCD.printNumF(phase, 2, 10, 50);
+  
+  myGLCD.setFont(SmallFont);
+  myGLCD.print(phaseText, 10, 115);
 
-    myGLCD.print(phaseText, 10, 115);
-
-  //print the date EG   3/1/11 23:59:59
-  /*
-  Serial.print(month);
-  Serial.print("/");
-  Serial.print(monthDay);
-  Serial.print("/");
-  Serial.print(year);
-  Serial.print(" ");
-  Serial.print(hour);
-  Serial.print(":");
-  Serial.print(minute);
-  Serial.print(":");
-  Serial.println(second);
-  */
   myGLCD.setFont(BigFont);
 
   y = 150;
@@ -491,6 +459,8 @@ v = v + 1;
 return v;
 } 
 
+
+// Any good ??????
 int moon_phase(int y, int m, int d)
 {
     /*
