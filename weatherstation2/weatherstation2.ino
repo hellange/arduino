@@ -10,6 +10,7 @@
 #include <UTouch.h>  // http://www.henningkarlsen.com/electronics
 #include <Adafruit_BMP085.h> // https://github.com/adafruit/Adafruit-BMP085-Library
 #include <Wire.h>
+#include <Timezone.h>    //https://github.com/JChristensen/Timezone
 #include "moon_phases_raw.h" 
 
 #include <DS1307RTC.h> // http://playground.arduino.cc//Code/Time
@@ -20,12 +21,16 @@ extern uint8_t SmallFont[];
 extern uint8_t BigFont[];
 extern uint8_t SevenSegNumFont[];
 
+
 // Using Arduino Mega and 3.2' TFT LCD 240x400 Display
 UTFT myGLCD(TFT01_32WD,38,39,40,41);
 UTouch myTouch(6,5,4,3,2);
 int counter = 0;
 int x, y;
 Adafruit_BMP085 bmp;
+
+
+
 
 //#define DS1307_ADDRESS 0x68
 byte zero = 0x00;
@@ -35,8 +40,7 @@ void setup(){
   Wire.begin();
   Serial.begin(9600);
   randomSeed(analogRead(0)); // ??
-  //setDateTime();
-  printDate();
+  
   initGraphics();
   myTouch.InitTouch();
   myTouch.setPrecision(PREC_LOW);
@@ -51,6 +55,9 @@ void setup(){
      Serial.println("Unable to sync with the RTC");
   else
      Serial.println("RTC has set the system time");         
+  
+  // Uncomment to set date
+  //setDateTime();
   
   //barGraph();
   //i2c_scanner();
@@ -125,11 +132,11 @@ void drawBar(int index, int value, int valueOffset){
 
   
   // draw it
-  myGLCD.setColor(30,100,30);
+  myGLCD.setColor(20,70,20);
   myGLCD.fillRect(xaxis + x1, yaxis, xaxis + x2, yaxis-height);
   
   // top very visible
-  myGLCD.setColor(100,200,100);
+  myGLCD.setColor(50,220,50);
   int markerHeight = 5;
   if (height < markerHeight){
     markerHeight = height;
@@ -229,44 +236,31 @@ byte bcdToDec(byte val)  {
 // Convert binary coded decimal to normal decimal numbers
   return ( (val/16*10) + (val%16) );
 }
-/*
+
 void setDateTime(){
-
-  byte second =      30; //0-59
-  byte minute =      35; //0-59
-  byte hour =        19; //0-23
-  byte weekDay =     3; //1-7
-  byte monthDay =    4; //1-31
-  byte month =       12; //1-12
-  byte year  =       13; //0-99
-
-  Wire.beginTransmission(DS1307_ADDRESS);
-  Wire.write(zero); //stop Oscillator
-
-  Wire.write(decToBcd(second));
-  Wire.write(decToBcd(minute));
-  Wire.write(decToBcd(hour));
-  Wire.write(decToBcd(weekDay));
-  Wire.write(decToBcd(monthDay));
-  Wire.write(decToBcd(month));
-  Wire.write(decToBcd(year));
-
-  Wire.write(zero); //start 
-
-  Wire.endTransmission();
+  // use UTC
+  int second =      30; //0-59
+  int minute =      55; //0-59
+  int hour =        19; //0-23
+  int weekDay =     1; //1-7
+  int monthDay =    22; //1-31
+  int month =       12; //1-12
+  int year  =       2013; //0-99
+  
+  setTime(hour,minute,second,monthDay,month,year);
 
 }
-*/
+
 
 const char* weekDays[] = {
-                   "         \0",
-                   "   Sunday\0",
-                   "   Monday\0",
-                   "  Tuesday\0",
-                   "Wednesday\0",
-                   " Thursday\0",
-                   "   Friday\0",
-                   " Saturday\0"};
+                   "   \0",
+                   "Sun\0",
+                   "Mon\0",
+                   "Tue\0",
+                   "Wed\0",
+                   "Thu\0",
+                   "Fri\0",
+                   "Sat\0"};
 const char* monthNames[] = {
                    "   \0",
                    "Jan\0",
@@ -280,47 +274,62 @@ const char* monthNames[] = {
                    "Sep\0",
                    "Oct\0",
                    "Nov\0",
-                   "Des\0"};
+                   "Dec\0"};
+                   
+                   
+//Central European Time (Frankfurt, Paris)
+TimeChangeRule CEST = {"CEST", Last, Sun, Mar, 2, 120};     //Central European Summer Time +2h
+TimeChangeRule CET = {"CET", Last, Sun, Oct, 3, 60};       //Central European Standard Time +1h
+Timezone myTZ(CEST, CET);
+time_t utc, local;
+
 void printDate(){
 
   /* Another calculation, seems to work */
   char phaseText[30];
   int phase = GetPhase(year(), month(), day(), phaseText);
   myGLCD.setColor(100,100,100);
-  myGLCD.print("Moon:", 10,10);
-  myGLCD.printNumI(phase, 10, 30);
+    myGLCD.setFont(SmallFont);
+
+  myGLCD.print("Moon phase", 15,30);
+  //myGLCD.printNumI(phase, 10, 30);
   
-  myGLCD.setFont(SmallFont);
   
   phaseText[17]='\0'; // show only first part of phase text
   myGLCD.print(phaseText, 10, 115);
 
-  showBitmap(phase);
+  showMoonImage(phase);
 
-  myGLCD.setFont(SevenSegNumFont);
+  utc = now();
+  TimeChangeRule *tcr; 
+  local = myTZ.toLocal(utc, &tcr);
+  char *timezone = tcr -> abbrev;
 
   y = 150;
+  
   myGLCD.setColor(100, 100, 200);
-  myGLCD.printNumI(hour(), 30, y, 2 ,'0');
+  myGLCD.setFont(SmallFont);
+  myGLCD.print(timezone, 5, y);
+
+  myGLCD.setFont(SevenSegNumFont);
+  myGLCD.printNumI(hour(local), 30, y, 2 ,'0');
   //myGLCD.print(":", 30+, y);
-  myGLCD.printNumI(minute(), 30+75, y, 2 ,'0');
+  myGLCD.printNumI(minute(local), 30+75, y, 2 ,'0');
   
   myGLCD.setFont(BigFont);
   myGLCD.printNumI(second(), 180, y, 2 ,'0');
   
   myGLCD.setFont(SmallFont);
   
-  int y = 220;
-  int x = 175;
+  int y = 210;
+  int x = 30;
   myGLCD.setColor(150,150,150);
-  
+
   myGLCD.print(weekDays[weekday()], x, y);
-  myGLCD.printNumI(day(), x+80, y, 2);
-  //myGLCD.print("/", y+100, y);
-  myGLCD.print(monthNames[month()], x+105, y, 2);
-  //myGLCD.print("/", y+160, y);
-  myGLCD.printNumI(year(), x+140, y, 2);
-  
+  myGLCD.printNumI(day(local), x+30, y, 2);
+  myGLCD.print(monthNames[month(local)], x+55, y, 2);
+  myGLCD.printNumI(year(local), x+90, y, 2);
+
 }
 
 
@@ -513,7 +522,7 @@ return v;
 
 
 
-void showBitmap(int phase){
+void showMoonImage(int phase){
      
   prog_uint16_t *imgName[8];
   imgName[0] = new_;
