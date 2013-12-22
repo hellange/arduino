@@ -16,6 +16,7 @@
 // Declare which fonts we will be using
 extern uint8_t SmallFont[];
 extern uint8_t BigFont[];
+extern uint8_t SevenSegNumFont[];
 
 // Using Arduino Mega and 3.2' TFT LCD 240x400 Display
 UTFT myGLCD(TFT01_32WD,38,39,40,41);
@@ -63,7 +64,7 @@ void loop(){
   }
   
   // every 30 minutes
-  if (secondSinceLastHistory > 60 * 30) {
+  if (secondSinceLastHistory > 3 ){ //60 * 30) {
     secondSinceLastHistory = 0;
     addHistoryValue(getMbar());
   }
@@ -111,20 +112,29 @@ void drawBar(int index, int value, int valueOffset){
   int x2 = x1 + width - margin;
   
   
-  // given value range (after offset) is between 0 and 80
+  // given value range (after offset) is between 0 and 100 (950-1050)
   // and display height = 100, adjust to full display range
-  height = height/0.8;
+  height = height; //   /0.8;
 
   
   // draw it
-  myGLCD.setColor(100,255,100);
+  myGLCD.setColor(30,100,30);
   myGLCD.fillRect(xaxis + x1, yaxis, xaxis + x2, yaxis-height);
+  
+  // top very visible
+  myGLCD.setColor(100,200,100);
+  int markerHeight = 5;
+  if (height < markerHeight){
+    markerHeight = height;
+  }
+  myGLCD.fillRect(xaxis + x1, yaxis-height, xaxis + x2, yaxis-height+markerHeight);
   
   // clear top (to replace previous bar if it was higher)
   myGLCD.setColor(0,0,0);
   myGLCD.fillRect(xaxis + x1, yaxis - maxValue, xaxis + x2, yaxis-height);
 
-  myGLCD.setColor(20,100,20);
+  // border
+  myGLCD.setColor(10,10,10);
   myGLCD.drawRect(xaxis, yaxis, xaxis + 24 * width, yaxis - maxValue);
 
 
@@ -132,7 +142,7 @@ void drawBar(int index, int value, int valueOffset){
 }
 
 
-int history[] = {960,1000,1040,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int history[] = {950,1000,1050,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 void addHistoryValue(int value){
 
   // shift left
@@ -155,7 +165,7 @@ void addHistoryValue(int value){
 void drawMillibarGraph(int values[], int nr_of_values){
   
   for (int i = 0; i< nr_of_values; i++){
-    drawBar(i,values[i], 960); // value offset 960 gives us 0 in graph for 960mBar
+    drawBar(i,values[i], 950); // value offset 950 gives us 0 in graph for 950mBar
   }
 }
 
@@ -270,23 +280,25 @@ void printDate(){
 
   showBitmap(phase);
 
-  myGLCD.setFont(BigFont);
+  myGLCD.setFont(SevenSegNumFont);
 
   y = 150;
   myGLCD.setColor(100, 100, 100);
-  myGLCD.printNumI(hour, 120, y, 2 ,'0');
-  myGLCD.print(":", 150, y);
-  myGLCD.printNumI(minute, 165, y, 2 ,'0');
-  myGLCD.print(":", 195, y);
+  myGLCD.printNumI(hour, 30, y, 2 ,'0');
+  //myGLCD.print(":", 30+, y);
+  myGLCD.printNumI(minute, 30+60, y, 2 ,'0');
+  
+  myGLCD.setFont(SmallFont);
+
   myGLCD.printNumI(second, 210, y, 2 ,'0');
   
-  int y = 170;
+  int y = 200;
   myGLCD.setColor(150,150,150);
-  myGLCD.printNumI(monthDay, 120, y, 2);
-  myGLCD.print("/", 150, y);
-  myGLCD.printNumI(month, 165, y, 2);
-  myGLCD.print("/", 195, y);
-  myGLCD.printNumI(year, 210, y, 2);
+  myGLCD.printNumI(monthDay, 120+100, y, 2);
+  myGLCD.print("/", 150+100, y);
+  myGLCD.printNumI(month, 165+100, y, 2);
+  myGLCD.print("/", 195+100, y);
+  myGLCD.printNumI(year, 210+100, y, 2);
   
 
 }
@@ -353,13 +365,27 @@ void showPressure()
     myGLCD.print("Could not find a valid BMP085 pressure sensor.", CENTER, 0);
     myGLCD.print("Anything connected at all ???", CENTER, 45);
   } else {
-    myGLCD.setColor(0, 0, 255);
-    myGLCD.printNumF(getMbar(), 1, 270, 30);
-    myGLCD.print("mBar", 270, 45);
+    myGLCD.setColor(0, 150, 0);
+    myGLCD.setFont(SevenSegNumFont);
+    myGLCD.printNumI((int)getMbar(), 260, 40);
+    myGLCD.setFont(BigFont);
+    myGLCD.setColor(80, 120, 80);
+    myGLCD.print("mBar", 260, 90);
     
-    myGLCD.print("Temp:", 270, 65);
-    myGLCD.printNumF(bmp.readTemperature(), 1, 270, 80);
+    myGLCD.setColor(0, 150, 0);
+    myGLCD.setFont(SevenSegNumFont);
+    myGLCD.printNumI((int)bmp.readTemperature(), 260, 90+40);
     
+    myGLCD.setFont(SmallFont);
+    myGLCD.print("O", 330, 125);
+    myGLCD.setFont(BigFont);
+    myGLCD.print("C", 340, 130);
+
+   // myGLCD.setFont(BigFont);
+   // myGLCD.setColor(80, 120, 80);
+   // myGLCD.print("Celsius", 260, 140+40);
+
+
 
   }
 }
