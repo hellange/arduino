@@ -50,10 +50,7 @@ void setup(){
   if(timeStatus()!= timeSet) 
      Serial.println("Unable to sync with the RTC");
   else
-     Serial.println("RTC has set the system time");      
-
-  printDate();
-   
+     Serial.println("RTC has set the system time");         
   
   //barGraph();
   //i2c_scanner();
@@ -286,33 +283,6 @@ const char* monthNames[] = {
                    "Des\0"};
 void printDate(){
 
-  // Reset the register pointer
- // Wire.beginTransmission(DS1307_ADDRESS);
-
- // Wire.write(zero);
- // Wire.endTransmission();
-
- // Wire.requestFrom(DS1307_ADDRESS, 7);
-  /*
-  int second = bcdToDec(Wire.read());
-  int minute = bcdToDec(Wire.read());
-  int hour = bcdToDec(Wire.read() & 0b111111); //24 hour time
-  int weekDay = bcdToDec(Wire.read()); //0-6 -> sunday - Saturday
-  int monthDay = bcdToDec(Wire.read());
-  int month = bcdToDec(Wire.read());
-  int year = bcdToDec(Wire.read());
-  */
- /*
-  int second = second();
-  int minute = minute();
-  int hour = hour();
-  int weekDay = weekday();
-  int monthDay = day();
-  int month = month();
-  int year = year();
-*/
-
-
   /* Another calculation, seems to work */
   char phaseText[30];
   int phase = GetPhase(year(), month(), day(), phaseText);
@@ -351,7 +321,6 @@ void printDate(){
   //myGLCD.print("/", y+160, y);
   myGLCD.printNumI(year(), x+140, y, 2);
   
-
 }
 
 
@@ -423,14 +392,15 @@ void showPressure()
     myGLCD.setColor(80, 120, 80);
     myGLCD.print("mBar", 260, 90);
     
+    int y = 150;
     myGLCD.setColor(0, 150, 0);
     myGLCD.setFont(SevenSegNumFont);
-    myGLCD.printNumI((int)bmp.readTemperature(), 260, 90+40);
+    myGLCD.printNumI((int)bmp.readTemperature(), 260, y);
     
     myGLCD.setFont(SmallFont);
-    myGLCD.print("O", 330, 125);
+    myGLCD.print("O", 330, y-5);
     myGLCD.setFont(BigFont);
-    myGLCD.print("C", 340, 130);
+    myGLCD.print("C", 340, y);
 
    // myGLCD.setFont(BigFont);
    // myGLCD.setColor(80, 120, 80);
