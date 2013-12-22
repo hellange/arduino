@@ -10,8 +10,10 @@
 #include <UTouch.h>  // http://www.henningkarlsen.com/electronics
 #include <Adafruit_BMP085.h> // https://github.com/adafruit/Adafruit-BMP085-Library
 #include <Wire.h>
-#include "moon_phases_raw.h"
+#include "moon_phases_raw.h" 
 
+#include <DS1307RTC.h> // http://playground.arduino.cc//Code/Time
+#include <Time.h>      // http://playground.arduino.cc//Code/Time
 //
 // Declare which fonts we will be using
 extern uint8_t SmallFont[];
@@ -25,7 +27,7 @@ int counter = 0;
 int x, y;
 Adafruit_BMP085 bmp;
 
-#define DS1307_ADDRESS 0x68
+//#define DS1307_ADDRESS 0x68
 byte zero = 0x00;
 int p= 1000;
 int delta = 1;
@@ -41,6 +43,14 @@ void setup(){
   //myTouch.setPrecision(PREC_MEDIUM);
   //myTouch.setPrecision(PREC_HI);
   //myTouch.setPrecision(PREC_EXTREME);
+
+  // the function to get the time from the RTC
+  setSyncProvider(RTC.get);   
+  
+  if(timeStatus()!= timeSet) 
+     Serial.println("Unable to sync with the RTC");
+  else
+     Serial.println("RTC has set the system time");      
 
   printDate();
    
@@ -64,7 +74,7 @@ void loop(){
   }
   
   // every 30 minutes
-  if (secondSinceLastHistory > 3 ){ //60 * 30) {
+  if (secondSinceLastHistory > 60 * 30) {
     secondSinceLastHistory = 0;
     addHistoryValue(getMbar());
   }
@@ -192,7 +202,7 @@ void checkTouch(){
        
        myGLCD.setColor(0,255,0);
        myGLCD.setBackColor(0,0,0);
-       myGLCD.print("Menu Off", 170, 210);
+       //myGLCD.print("Menu Off", 170, 210);
     }
   } else if (dataAvailable && pressMode == true){
     // not released yet...
@@ -222,6 +232,7 @@ byte bcdToDec(byte val)  {
 // Convert binary coded decimal to normal decimal numbers
   return ( (val/16*10) + (val%16) );
 }
+/*
 void setDateTime(){
 
   byte second =      30; //0-59
@@ -248,16 +259,41 @@ void setDateTime(){
   Wire.endTransmission();
 
 }
+*/
+
+const char* weekDays[] = {
+                   "         \0",
+                   "   Sunday\0",
+                   "   Monday\0",
+                   "  Tuesday\0",
+                   "Wednesday\0",
+                   " Thursday\0",
+                   "   Friday\0",
+                   " Saturday\0"};
+const char* monthNames[] = {
+                   "   \0",
+                   "Jan\0",
+                   "Feb\0",
+                   "Mar\0",
+                   "Apr\0",
+                   "May\0",
+                   "Jun\0",
+                   "Jul\0",
+                   "Aug\0",
+                   "Sep\0",
+                   "Oct\0",
+                   "Nov\0",
+                   "Des\0"};
 void printDate(){
 
   // Reset the register pointer
-  Wire.beginTransmission(DS1307_ADDRESS);
+ // Wire.beginTransmission(DS1307_ADDRESS);
 
-  Wire.write(zero);
-  Wire.endTransmission();
+ // Wire.write(zero);
+ // Wire.endTransmission();
 
-  Wire.requestFrom(DS1307_ADDRESS, 7);
-
+ // Wire.requestFrom(DS1307_ADDRESS, 7);
+  /*
   int second = bcdToDec(Wire.read());
   int minute = bcdToDec(Wire.read());
   int hour = bcdToDec(Wire.read() & 0b111111); //24 hour time
@@ -265,17 +301,28 @@ void printDate(){
   int monthDay = bcdToDec(Wire.read());
   int month = bcdToDec(Wire.read());
   int year = bcdToDec(Wire.read());
+  */
+ /*
+  int second = second();
+  int minute = minute();
+  int hour = hour();
+  int weekDay = weekday();
+  int monthDay = day();
+  int month = month();
+  int year = year();
+*/
 
 
-  
   /* Another calculation, seems to work */
   char phaseText[30];
-  int phase = GetPhase(2000+year, month, monthDay, phaseText);
+  int phase = GetPhase(year(), month(), day(), phaseText);
   myGLCD.setColor(100,100,100);
   myGLCD.print("Moon:", 10,10);
   myGLCD.printNumI(phase, 10, 30);
   
   myGLCD.setFont(SmallFont);
+  
+  phaseText[17]='\0'; // show only first part of phase text
   myGLCD.print(phaseText, 10, 115);
 
   showBitmap(phase);
@@ -283,22 +330,26 @@ void printDate(){
   myGLCD.setFont(SevenSegNumFont);
 
   y = 150;
-  myGLCD.setColor(100, 100, 100);
-  myGLCD.printNumI(hour, 30, y, 2 ,'0');
+  myGLCD.setColor(100, 100, 200);
+  myGLCD.printNumI(hour(), 30, y, 2 ,'0');
   //myGLCD.print(":", 30+, y);
-  myGLCD.printNumI(minute, 30+60, y, 2 ,'0');
+  myGLCD.printNumI(minute(), 30+75, y, 2 ,'0');
+  
+  myGLCD.setFont(BigFont);
+  myGLCD.printNumI(second(), 180, y, 2 ,'0');
   
   myGLCD.setFont(SmallFont);
-
-  myGLCD.printNumI(second, 210, y, 2 ,'0');
   
-  int y = 200;
+  int y = 220;
+  int x = 175;
   myGLCD.setColor(150,150,150);
-  myGLCD.printNumI(monthDay, 120+100, y, 2);
-  myGLCD.print("/", 150+100, y);
-  myGLCD.printNumI(month, 165+100, y, 2);
-  myGLCD.print("/", 195+100, y);
-  myGLCD.printNumI(year, 210+100, y, 2);
+  
+  myGLCD.print(weekDays[weekday()], x, y);
+  myGLCD.printNumI(day(), x+80, y, 2);
+  //myGLCD.print("/", y+100, y);
+  myGLCD.print(monthNames[month()], x+105, y, 2);
+  //myGLCD.print("/", y+160, y);
+  myGLCD.printNumI(year(), x+140, y, 2);
   
 
 }
