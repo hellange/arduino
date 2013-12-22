@@ -1,8 +1,6 @@
 // Weather Station with LCD TFT display
-// Based on 
-//   Graphics library (C)2012 Henning Karlsen
-//   Adafruit_BMP085 by Adafruit
-//   i2c_scanner from various sources...
+// Uses several libraries, ref link at the #include lines
+//
 // Author:
 // Helge Langehaug
 
@@ -11,16 +9,15 @@
 #include <Adafruit_BMP085.h> // https://github.com/adafruit/Adafruit-BMP085-Library
 #include <Wire.h>
 #include <Timezone.h>    //https://github.com/JChristensen/Timezone
-#include "moon_phases_raw.h" 
-
 #include <DS1307RTC.h> // http://playground.arduino.cc//Code/Time
 #include <Time.h>      // http://playground.arduino.cc//Code/Time
-//
+
+#include "moon_phases_raw.h" 
+
 // Declare which fonts we will be using
 extern uint8_t SmallFont[];
 extern uint8_t BigFont[];
 extern uint8_t SevenSegNumFont[];
-
 
 // Using Arduino Mega and 3.2' TFT LCD 240x400 Display
 UTFT myGLCD(TFT01_32WD,38,39,40,41);
@@ -29,13 +26,9 @@ int counter = 0;
 int x, y;
 Adafruit_BMP085 bmp;
 
-
-
-
-//#define DS1307_ADDRESS 0x68
 byte zero = 0x00;
 int p= 1000;
-int delta = 1;
+
 void setup(){
   Wire.begin();
   Serial.begin(9600);
@@ -59,8 +52,6 @@ void setup(){
   // Uncomment to set date
   //setDateTime();
   
-  //barGraph();
-  //i2c_scanner();
 }
 
 bool menuMode = false;
@@ -83,14 +74,6 @@ void loop(){
     addHistoryValue(getMbar());
   }
   secondSinceLastHistory += 1;
-  /*
-  if (p>1040){
-    delta = -3;
-  } else if (p<960) {
-     delta = 4;
-  }
-    p=p+delta;
-  */ 
 }
 
 //******************* GRAPHICS INIT ***************************
@@ -132,7 +115,7 @@ void drawBar(int index, int value, int valueOffset){
 
   
   // draw it
-  myGLCD.setColor(20,70,20);
+  myGLCD.setColor(10,50,10);
   myGLCD.fillRect(xaxis + x1, yaxis, xaxis + x2, yaxis-height);
   
   // top very visible
@@ -228,19 +211,18 @@ void checkTouch(){
 }
 
 //******************* CLOCK/DATE ***********************
-
-
 void setDateTime(){
-  // use UTC
+  // Use UTC
   int second =      30; //0-59
-  int minute =      14; //0-59
+  int minute =      55; //0-59
   int hour =        20; //0-23
   int weekDay =     1; //1-7
   int monthDay =    22; //1-31
   int month =       12; //1-12
-  int year  =       2013; //0-99
+  int year  =       2013;
   
   setTime(hour,minute,second,monthDay,month,year);
+  RTC.set(now());
 
 }
 
@@ -282,11 +264,8 @@ void printDate(){
   char phaseText[30];
   int phase = GetPhase(year(), month(), day(), phaseText);
   myGLCD.setColor(100,100,100);
-    myGLCD.setFont(SmallFont);
-
-  myGLCD.print("Moon phase", 15,30);
-  //myGLCD.printNumI(phase, 10, 30);
-  
+  myGLCD.setFont(SmallFont);
+  myGLCD.print("Moon phase", 15,30);  
   
   phaseText[17]='\0'; // show only first part of phase text
   myGLCD.print(phaseText, 10, 115);
@@ -325,60 +304,6 @@ void printDate(){
 
 }
 
-
-
-
-//******************* I2C SCANNING ***********************
-void i2c_scanner()
-{
-    myGLCD.setColor(255, 0, 0);
-
-  byte error, address;
-  int nDevices;
-  
-  Serial.println("Scanning...");
-
-  nDevices = 0;
-  for(address = 1; address < 127; address++ ) 
-  {
-    // The i2c_scanner uses the return value of
-    // the Write.endTransmisstion to see if
-    // a device did acknowledge to the address.
-    Wire.beginTransmission(address);
-    error = Wire.endTransmission();
-
-    
-     myGLCD.setFont(SmallFont);
-    myGLCD.print("Searching for I2C devices, found:", 30, 150);
-
-    if (error == 0)
-    {
-      Serial.print("I2C device found at address 0x");
-      if (address<16) 
-        Serial.print("0");
-      Serial.print(address,HEX);
-      Serial.println("  !");
-      myGLCD.printNumI(address, 30 + nDevices*30, 170);
-      nDevices++;
-    }
-    else if (error==4) 
-    {
-      Serial.print("Unknow error at address 0x");
-      if (address<16) 
-        Serial.print("0");
-      Serial.println(address,HEX);
-    }    
-  }
-  if (nDevices == 0){
-    Serial.println("No I2C devices found\n");
-    myGLCD.print("No I2C devices found", 30, 150);
-  }
-  else
-    Serial.println("done\n");
-
-}
-
-
 //******************* PRESSURE ***************************
 void showPressure()
 {
@@ -407,12 +332,6 @@ void showPressure()
     myGLCD.print("O", 330, y-5);
     myGLCD.setFont(BigFont);
     myGLCD.print("C", 340, y);
-
-   // myGLCD.setFont(BigFont);
-   // myGLCD.setColor(80, 120, 80);
-   // myGLCD.print("Celsius", 260, 140+40);
-
-
 
   }
 }
