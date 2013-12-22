@@ -77,7 +77,7 @@ void loop(){
     delay(50);
   }
   
-  // every 30 minutes
+  // update bar graph every apprx. 30 minutes
   if (secondSinceLastHistory > 60 * 30) {
     secondSinceLastHistory = 0;
     addHistoryValue(getMbar());
@@ -228,20 +228,13 @@ void checkTouch(){
 }
 
 //******************* CLOCK/DATE ***********************
-byte decToBcd(byte val){
-// Convert normal decimal numbers to binary coded decimal
-  return ( (val/10*16) + (val%10) );
-}
-byte bcdToDec(byte val)  {
-// Convert binary coded decimal to normal decimal numbers
-  return ( (val/16*10) + (val%16) );
-}
+
 
 void setDateTime(){
   // use UTC
   int second =      30; //0-59
-  int minute =      55; //0-59
-  int hour =        19; //0-23
+  int minute =      14; //0-59
+  int hour =        20; //0-23
   int weekDay =     1; //1-7
   int monthDay =    22; //1-31
   int month =       12; //1-12
@@ -404,8 +397,12 @@ void showPressure()
     int y = 150;
     myGLCD.setColor(0, 150, 0);
     myGLCD.setFont(SevenSegNumFont);
-    myGLCD.printNumI((int)bmp.readTemperature(), 260, y);
-    
+    float fTemp = bmp.readTemperature();
+    myGLCD.printNumI((int)fTemp, 260, y);
+    float dec = (fTemp - (int)fTemp) * 10; // first decimal
+    myGLCD.setFont(BigFont);
+    myGLCD.printNumI(dec, 335, y+35, 1);
+
     myGLCD.setFont(SmallFont);
     myGLCD.print("O", 330, y-5);
     myGLCD.setFont(BigFont);
