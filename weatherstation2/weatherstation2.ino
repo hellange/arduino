@@ -10,7 +10,7 @@
 #include <UTouch.h>  // http://www.henningkarlsen.com/electronics
 #include <Adafruit_BMP085.h> // https://github.com/adafruit/Adafruit-BMP085-Library
 #include <Wire.h>
-#include "moon_phase_raw.h"
+#include "moon_phases_raw.h"
 
 //
 // Declare which fonts we will be using
@@ -52,7 +52,7 @@ bool menuMode = false;
 
 int secondSinceLastHistory = 9999;
 void loop(){
-                myGLCD.setBackColor(255,255,255);
+  myGLCD.setBackColor(0,0,0);
 
   printDate();
   showPressure();
@@ -82,12 +82,12 @@ void loop(){
 void initGraphics() {
   myGLCD.InitLCD();
   myGLCD.setFont(SmallFont);
-  myGLCD.fillScr(240,240,240);
-  myGLCD.setBackColor(240,240,240);
+  myGLCD.fillScr(0,0,0);
+  //myGLCD.setBackColor(240,240,240);
   myGLCD.setColor(0, 255, 0);
   
   
-  showBitmap();
+  
 }
 
 //******************* BARGRAPH ************************
@@ -117,14 +117,14 @@ void drawBar(int index, int value, int valueOffset){
 
   
   // draw it
-  myGLCD.setColor(0,0,255);
+  myGLCD.setColor(100,255,100);
   myGLCD.fillRect(xaxis + x1, yaxis, xaxis + x2, yaxis-height);
   
   // clear top (to replace previous bar if it was higher)
-  myGLCD.setColor(240,240,240);
+  myGLCD.setColor(0,0,0);
   myGLCD.fillRect(xaxis + x1, yaxis - maxValue, xaxis + x2, yaxis-height);
 
-  myGLCD.setColor(0,0,150);
+  myGLCD.setColor(20,100,20);
   myGLCD.drawRect(xaxis, yaxis, xaxis + 24 * width, yaxis - maxValue);
 
 
@@ -165,26 +165,23 @@ void checkTouch(){
   bool dataAvailable = myTouch.dataAvailable();
   if (dataAvailable && pressMode == false) {
     pressMode = true;
-    int menuHeight=150;
+    int menuHeight=120;
     if (menuMode == false) {
-      
        menuMode = true;
-       myGLCD.setColor(0,0,0);
+       myGLCD.setColor(100,100,100);
        myGLCD.fillRect(0,240,399,240-menuHeight);
+       
        myGLCD.setColor(0,255,0);
-                     myGLCD.setBackColor(0,0,0);
-
+       myGLCD.setBackColor(100,100,100);
        myGLCD.print("Menu On ", 170, 210);
 
     } else {
       menuMode = false;
-             myGLCD.setColor(255,255,255);
-
-             myGLCD.fillRect(0,240,399,240-menuHeight);
-              myGLCD.setColor(0,255,0);
-
-              myGLCD.setBackColor(255,255,255);
-
+       myGLCD.setColor(0,0,0);
+       myGLCD.fillRect(0,240,399,240-menuHeight);
+       
+       myGLCD.setColor(0,255,0);
+       myGLCD.setBackColor(0,0,0);
        myGLCD.print("Menu Off", 170, 210);
     }
   } else if (dataAvailable && pressMode == true){
@@ -260,29 +257,23 @@ void printDate(){
   int year = bcdToDec(Wire.read());
 
 
-  /*  ANY GOOD ???????
-      calculates the moon phase (0-7), accurate to 1 segment.
-      0 = > new moon.
-      4 => full moon.
-  */
-  int phase2 = moon_phase(2000+year, month, monthDay);
-  myGLCD.printNumI(phase2, 10, 70);
-
   
   /* Another calculation, seems to work */
   char phaseText[30];
   int phase = GetPhase(2000+year, month, monthDay, phaseText);
   myGLCD.setColor(100,100,100);
-  myGLCD.print("Moon:", 10,30);
-  myGLCD.printNumI(phase, 10, 50);
+  myGLCD.print("Moon:", 10,10);
+  myGLCD.printNumI(phase, 10, 30);
   
   myGLCD.setFont(SmallFont);
   myGLCD.print(phaseText, 10, 115);
 
+  showBitmap(phase);
+
   myGLCD.setFont(BigFont);
 
   y = 150;
-  myGLCD.setColor(0, 0, 0);
+  myGLCD.setColor(100, 100, 100);
   myGLCD.printNumI(hour, 120, y, 2 ,'0');
   myGLCD.print(":", 150, y);
   myGLCD.printNumI(minute, 165, y, 2 ,'0');
@@ -472,45 +463,10 @@ v = v + 1;
 return v;
 } 
 
-// Any good ??????
-int moon_phase(int y, int m, int d)
-{
-    /*
-      calculates the moon phase (0-7), accurate to 1 segment.
-      0 = > new moon.
-      4 => full moon.
-      */
-
-    int c,e;
-    double jd;
-    int b;
-
-    if (m < 3) {
-        y--;
-        m += 12;
-    }
-    ++m;
-    c = 365.25*y;
-    e = 30.6*m;
-    jd = c+e+d-694039.09;  /* jd is total days elapsed */
-    jd /= 29.53;           /* divide by the moon cycle (29.53 days) */
-    b = jd;		   /* int(jd) -> b, take integer part of jd */
-    jd -= b;		   /* subtract integer part to leave fractional part of original jd */
-    b = jd*8 + 0.5;	   /* scale fraction from 0-8 and round by adding 0.5 */
-    b = b & 7;		   /* 0 and 8 are the same so turn 8 into 0 */
-    return b;
-}
 
 
 
-
-
-
-
-
-
-void showBitmap(){
-     // getImageFromPhaseNr
+void showBitmap(int phase){
      
   prog_uint16_t *imgName[8];
   imgName[0] = new_;
@@ -523,8 +479,8 @@ void showBitmap(){
   imgName[7] = waning_crescent;
   
   
-  //myGLCD.drawBitmap(5,160,60,60,imgName[i]);
+  myGLCD.drawBitmap(25,50,60,60,imgName[phase]);
   
-  myGLCD.drawBitmap(5,160,60,60,first_quarter);
+  //myGLCD.drawBitmap(5,160,60,60,first_quarter);
 }
 
