@@ -4,13 +4,13 @@
 // Author:
 // Helge Langehaug
 
-#include <UTFT.h>    // http://www.henningkarlsen.com/electronics
-#include <UTouch.h>  // http://www.henningkarlsen.com/electronics
-#include <Adafruit_BMP085.h> // https://github.com/adafruit/Adafruit-BMP085-Library
 #include <Wire.h>
-#include <Timezone.h>    //https://github.com/JChristensen/Timezone
-#include <DS1307RTC.h> // http://playground.arduino.cc//Code/Time
-#include <Time.h>      // http://playground.arduino.cc//Code/Time
+#include <UTFT.h>            // http://www.henningkarlsen.com/electronics
+#include <UTouch.h>          // http://www.henningkarlsen.com/electronics
+#include <Adafruit_BMP085.h> // https://github.com/adafruit/Adafruit-BMP085-Library
+#include <Timezone.h>        // https://github.com/JChristensen/Timezone
+#include <DS1307RTC.h>       // http://playground.arduino.cc//Code/Time
+#include <Time.h>            // http://playground.arduino.cc//Code/Time
 
 #include "moon_phases_raw.h" 
 
@@ -22,12 +22,10 @@ extern uint8_t SevenSegNumFont[];
 // Using Arduino Mega and 3.2' TFT LCD 240x400 Display
 UTFT myGLCD(TFT01_32WD,38,39,40,41);
 UTouch myTouch(6,5,4,3,2);
-int counter = 0;
-int x, y;
 Adafruit_BMP085 bmp;
 
-byte zero = 0x00;
-int p= 1000;
+boolean pressMode = false;
+bool menuMode = false;
 
 void setup(){
   Wire.begin();
@@ -54,26 +52,45 @@ void setup(){
   
 }
 
-bool menuMode = false;
 
-int secondSinceLastHistory = 9999;
 void loop(){
   myGLCD.setBackColor(0,0,0);
+  renderDisplay();
 
-  printDate();
-  showPressure();
-  
-  for (int i = 0; i<18; i++){
+  for (int i = 0; i<10; i++){
     checkTouch();
     delay(50);
   }
   
-  // update bar graph every apprx. 30 minutes
-  if (secondSinceLastHistory > 60 * 30) {
-    secondSinceLastHistory = 0;
-    addHistoryValue(getMbar());
+ 
+}
+
+time_t lastPressureRender = now() - 1000L;
+time_t lastPressureHistoryRender = now() - 1000L;
+time_t lastMoonPhaseRender = now() - 1000L;
+
+void renderDisplay(){
+  
+  if (now() - lastMoonPhaseRender > 5) {
+    showMoonPhase(10,30);
+    lastMoonPhaseRender = now();
   }
-  secondSinceLastHistory += 1;
+
+  if (now() - lastPressureRender > 5){
+    showPressure();
+    lastPressureRender = now();
+  }
+  if (now() - lastPressureHistoryRender > 3) {
+    addHistoryValue(getMbar());
+    lastPressureHistoryRender = now();
+  }
+  
+  if (menuMode == false){
+    showTime(40,150);
+    showDate(60,210);
+    showTemperature();
+  } 
+  
 }
 
 //******************* GRAPHICS INIT ***************************
@@ -166,22 +183,24 @@ void drawMillibarGraph(int values[], int nr_of_values){
   }
 }
 
-boolean pressMode = false;
+
 //******************* TOUCH ***************************
 void checkTouch(){
   bool dataAvailable = myTouch.dataAvailable();
   if (dataAvailable && pressMode == false) {
     pressMode = true;
-    int menuHeight=120;
+    int menuHeight=100;
     if (menuMode == false) {
        menuMode = true;
+       myGLCD.setColor(0,0,0);
+       myGLCD.fillRect(0,239,399,239-menuHeight);
        myGLCD.setColor(100,100,100);
-       myGLCD.fillRect(0,240,399,240-menuHeight);
-       
-       myGLCD.setColor(0,255,0);
-       myGLCD.setBackColor(100,100,100);
-       myGLCD.print("Menu On ", 170, 210);
+       myGLCD.drawRect(0,239,399,239-menuHeight);
 
+       myGLCD.setColor(0,255,0);
+       myGLCD.setBackColor(0,0,0);
+       //myGLCD.print("Menu On ", 170, 210);
+       showMoonPhaseWeek(0,150);
     } else {
       menuMode = false;
        myGLCD.setColor(0,0,0);
@@ -258,50 +277,64 @@ TimeChangeRule CET = {"CET", Last, Sun, Oct, 3, 60};       //Central European St
 Timezone myTZ(CEST, CET);
 time_t utc, local;
 
-void printDate(){
-
-  /* Another calculation, seems to work */
-  char phaseText[30];
-  int phase = GetPhase(year(), month(), day(), phaseText);
-  myGLCD.setColor(100,100,100);
+void showDate(int x,int y){
   myGLCD.setFont(SmallFont);
-  myGLCD.print("Moon phase", 15,30);  
-  
-  phaseText[17]='\0'; // show only first part of phase text
-  myGLCD.print(phaseText, 10, 115);
-
-  showMoonImage(phase);
-
-  utc = now();
-  TimeChangeRule *tcr; 
-  local = myTZ.toLocal(utc, &tcr);
-  char *timezone = tcr -> abbrev;
-
-  y = 150;
-  
-  myGLCD.setColor(100, 100, 200);
-  myGLCD.setFont(SmallFont);
-  myGLCD.print(timezone, 5, y);
-
-  myGLCD.setFont(SevenSegNumFont);
-  myGLCD.printNumI(hour(local), 30, y, 2 ,'0');
-  //myGLCD.print(":", 30+, y);
-  myGLCD.printNumI(minute(local), 30+75, y, 2 ,'0');
-  
-  myGLCD.setFont(BigFont);
-  myGLCD.printNumI(second(), 180, y, 2 ,'0');
-  
-  myGLCD.setFont(SmallFont);
-  
-  int y = 210;
-  int x = 30;
   myGLCD.setColor(150,150,150);
 
   myGLCD.print(weekDays[weekday()], x, y);
   myGLCD.printNumI(day(local), x+30, y, 2);
   myGLCD.print(monthNames[month(local)], x+55, y, 2);
   myGLCD.printNumI(year(local), x+90, y, 2);
+}
+void showTime(int x,int y){
+  utc = now();
+  TimeChangeRule *tcr; 
+  local = myTZ.toLocal(utc, &tcr);
+  char *timezone = tcr -> abbrev;
 
+  myGLCD.setColor(100, 100, 200);
+  myGLCD.setFont(SmallFont);
+  myGLCD.print(timezone, 5, y);
+
+  myGLCD.setFont(SevenSegNumFont);
+  myGLCD.printNumI(hour(local), x, y, 2 ,'0');
+  myGLCD.printNumI(minute(local), x+75, y, 2 ,'0');
+  
+  myGLCD.setFont(BigFont);
+  myGLCD.printNumI(second(), x+140, y, 2 ,'0');
+}
+
+void showMoonPhase(int x,int y){
+  char phaseText[30];
+  // no conversion to local timezone, but...
+  int phase = GetPhase(year(), month(), day(now()), phaseText);
+  myGLCD.setColor(100,100,100);
+  myGLCD.setFont(SmallFont);
+  myGLCD.print("Moon phase", x+5,y);  
+  
+  phaseText[17]='\0'; // show only first part of phase text
+  myGLCD.print(phaseText, x, y+85);
+
+  showMoonImage(phase,25,50);
+}
+void showMoonPhaseWeek(int x,int y){
+  char phaseText[30];
+  time_t oneDay =  60L*60L*24L; 
+  // no conversion to local timezone, but...
+  myGLCD.setColor(200,200,250);
+  myGLCD.setFont(SmallFont);
+  for (int i=0; i <= 5; i++){  
+    time_t time = now() + oneDay * (i+1) * 2;
+    int phase = GetPhase(year(time), month(time), day(time), phaseText);
+    int xPos = x + 65*i;
+    showMoonImage(phase, xPos ,y);
+    myGLCD.print(monthNames[month(time)], xPos +10 , y + 70);
+    myGLCD.printNumI(day(time), xPos + 40, y + 70);
+    
+    // horizontal marker
+    myGLCD.setColor(150,150,200);
+    myGLCD.drawRect(xPos, y+65, xPos + 60 , y+65);
+  }
 }
 
 //******************* PRESSURE ***************************
@@ -318,6 +351,21 @@ void showPressure()
     myGLCD.setFont(BigFont);
     myGLCD.setColor(80, 120, 80);
     myGLCD.print("mBar", 260, 90);
+  }
+}
+
+float getMbar(){
+  return bmp.readPressure()/100;
+}
+
+// *************** TEMP ******************
+void showTemperature()
+{
+  myGLCD.setFont(BigFont);
+  if (!bmp.begin()) {
+    myGLCD.print("Could not find a valid BMP085 pressure sensor.", CENTER, 0);
+    myGLCD.print("Anything connected at all ???", CENTER, 45);
+  } else {
     
     int y = 150;
     myGLCD.setColor(0, 150, 0);
@@ -336,9 +384,7 @@ void showPressure()
   }
 }
 
-float getMbar(){
-  return bmp.readPressure()/100;
-}
+
 
 // Ref:http://www.nano-reef.com/topic/217305-a-lunar-phase-function-for-the-arduino/
 int GetPhase(int nYear, int nMonth, int nDay, char *phaseText) // calculate the current phase of the moon
@@ -438,7 +484,7 @@ return v;
 
 
 
-void showMoonImage(int phase){
+void showMoonImage(int phase,int x,int y){
      
   prog_uint16_t *imgName[8];
   imgName[0] = new_;
@@ -451,7 +497,7 @@ void showMoonImage(int phase){
   imgName[7] = waning_crescent;
   
   
-  myGLCD.drawBitmap(25,50,60,60,imgName[phase]);
+  myGLCD.drawBitmap(x,y,60,60,imgName[phase]);
   
   //myGLCD.drawBitmap(5,160,60,60,first_quarter);
 }
