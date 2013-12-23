@@ -76,7 +76,7 @@ void renderDisplay(){
     lastMoonPhaseRender = now();
   }
 
-  if (now() - lastPressureRender > 5){
+  if (now() - lastPressureRender > 60 * 30){
     showPressure();
     lastPressureRender = now();
   }
