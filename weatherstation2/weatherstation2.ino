@@ -76,11 +76,11 @@ void renderDisplay(){
     lastMoonPhaseRender = now();
   }
 
-  if (now() - lastPressureRender > 60 * 30){
+  if (now() - lastPressureRender > 5){
     showPressure();
     lastPressureRender = now();
   }
-  if (now() - lastPressureHistoryRender > 3) {
+  if (now() - lastPressureHistoryRender > 60 * 30) {
     addHistoryValue(getMbar());
     lastPressureHistoryRender = now();
   }
