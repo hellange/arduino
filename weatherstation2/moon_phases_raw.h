@@ -1,4 +1,4 @@
-
+#include <avr/pgmspace.h>
 
 prog_uint16_t first_quarter[3600] PROGMEM={
 

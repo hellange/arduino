@@ -11,8 +11,7 @@
 #include <Timezone.h>        // https://github.com/JChristensen/Timezone
 #include <DS1307RTC.h>       // http://playground.arduino.cc//Code/Time
 #include <Time.h>            // http://playground.arduino.cc//Code/Time
-
-#include "moon_phases_raw.h" 
+#include "moon_phases.h"
 
 // Declare which fonts we will be using
 extern uint8_t SmallFont[];
@@ -156,7 +155,7 @@ void drawBar(int index, int value, int valueOffset){
 }
 
 
-int history[] = {950,1000,1050,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+int history[] = {950,951,952,1050,1000,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 void addHistoryValue(int value){
 
   // shift left
@@ -304,17 +303,16 @@ void showTime(int x,int y){
   myGLCD.printNumI(second(), x+140, y, 2 ,'0');
 }
 
+
+//******************* MOON ***************************
+
 void showMoonPhase(int x,int y){
-  char phaseText[30];
   // no conversion to local timezone, but...
-  int phase = GetPhase(year(), month(), day(now()), phaseText);
+  int phase = GetPhase(year(), month(), day(now()));
   myGLCD.setColor(100,100,100);
   myGLCD.setFont(SmallFont);
   myGLCD.print("Moon phase", x+5,y);  
-  
-  phaseText[17]='\0'; // show only first part of phase text
-  myGLCD.print(phaseText, x, y+85);
-
+  myGLCD.print(getMoonPhaseName(phase), x, y+85);
   showMoonImage(phase,25,50);
 }
 void showMoonPhaseWeek(int x,int y){
@@ -325,7 +323,7 @@ void showMoonPhaseWeek(int x,int y){
   myGLCD.setFont(SmallFont);
   for (int i=0; i <= 5; i++){  
     time_t time = now() + oneDay * (i+1) * 2;
-    int phase = GetPhase(year(time), month(time), day(time), phaseText);
+    int phase = GetPhase(year(time), month(time), day(time));
     int xPos = x + 65*i;
     showMoonImage(phase, xPos ,y);
     myGLCD.print(monthNames[month(time)], xPos +10 , y + 70);
@@ -335,6 +333,10 @@ void showMoonPhaseWeek(int x,int y){
     myGLCD.setColor(150,150,200);
     myGLCD.drawRect(xPos, y+65, xPos + 60 , y+65);
   }
+}
+
+void showMoonImage(int phase,int x,int y){
+  myGLCD.drawBitmap(x,y,60,60,getMoonPhaseRawImage(phase));
 }
 
 //******************* PRESSURE ***************************
@@ -386,119 +388,4 @@ void showTemperature()
 
 
 
-// Ref:http://www.nano-reef.com/topic/217305-a-lunar-phase-function-for-the-arduino/
-int GetPhase(int nYear, int nMonth, int nDay, char *phaseText) // calculate the current phase of the moon
-{
-int phase;
-double AG, IP;
-long YY, MM, K1, K2, K3, JD;
-YY = nYear - floor((12 - nMonth) / 10);
-MM = nMonth + 9;
-if (MM >= 12)
-{
-MM = MM - 12;
-}
-K1 = floor(365.25 * (YY + 4712));
-K2 = floor(30.6 * MM + 0.5);
-K3 = floor(floor((YY / 100) + 49) * 0.75) - 38;
-JD = K1 + K2 + nDay + 59;
-if (JD > 2299160)
-{
-JD = JD - K3;
-}
-IP = MyNormalize((JD - 2451550.1) / 29.530588853);
-AG = IP*29.53;
-phase = 0;
-if ((AG < 1.84566) && (phase == 0))
-{
-//phase = 0; //new; 0% illuminated
-phase = 0;
-strcpy(phaseText,"New              XXXXXXXXXX");
-}
-if ((AG < 5.53699) && (phase == 0))
-{
-//phase = .25; //Waxing crescent; 25% illuminated
-phase = 1;
-strcpy(phaseText,"Waxing crescent  XXXXXX__");
-}
-if ((AG < 9.922831) && (phase == 0))
-{
-//phase = .50; //First quarter; 50% illuminated
-phase = 2;
-strcpy(phaseText,"First quarter    XXXX____");
-
-}
-if ((AG < 12.91963) && (phase == 0))
-{
-//phase = .75; //Waxing gibbous; 75% illuminated
-phase = 3;
-strcpy(phaseText,"Waxing gibbous   XX______");
-
-}
-if ((AG < 16.61096) && (phase == 0))
-{
-//phase = 1; //Full; 100% illuminated
-phase = 4;
-strcpy(phaseText,"Full             ________");
-
-}
-if ((AG < 20.30228) && (phase == 0))
-{
-//phase = .75; //Waning gibbous; 75% illuminated
-phase = 5;
-strcpy(phaseText,"Waning gibbous   ______XX");
-
-}
-if ((AG < 23.99361) && (phase == 0))
-{
-//phase = .50; //Last quarter; 50% illuminated
-phase = 6;
-strcpy(phaseText,"Last quarter     ____XXXX");
-
-}
-if ((AG < 27.68493) && (phase == 0))
-{
-phase = 7;
-//phase = .25; //Waning crescent; 25% illuminated
-strcpy(phaseText,"Waning crescent  __XXXXXX");
-
-}
-if (phase == 0)
-{
-//phase = 0; //default to new; 0% illuminated
-phase = 0;
-strcpy(phaseText,"New              XXXXXXXX");
-
-}
-return phase;
-}
-
-double MyNormalize(double v)
-{
-v = v - floor(v);
-if (v < 0)
-v = v + 1;
-return v;
-} 
-
-
-
-
-void showMoonImage(int phase,int x,int y){
-     
-  prog_uint16_t *imgName[8];
-  imgName[0] = new_;
-  imgName[1] = waxing_crescent;
-  imgName[2] = first_quarter;
-  imgName[3] = waxing_gibbous;
-  imgName[4] = full;
-  imgName[5] = waning_gibbous;
-  imgName[6] = last_quarter;
-  imgName[7] = waning_crescent;
-  
-  
-  myGLCD.drawBitmap(x,y,60,60,imgName[phase]);
-  
-  //myGLCD.drawBitmap(5,160,60,60,first_quarter);
-}
 
