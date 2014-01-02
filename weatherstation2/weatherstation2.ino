@@ -347,8 +347,10 @@ void showPressure()
     myGLCD.print("Could not find a valid BMP085 pressure sensor.", CENTER, 0);
     myGLCD.print("Anything connected at all ???", CENTER, 45);
   } else {
-    myGLCD.setColor(0, 150, 0);
     myGLCD.setFont(SevenSegNumFont);
+    myGLCD.setColor(0, 0, 0);
+    myGLCD.fillRect(260, 40, 260+myGLCD.getFontXsize()*4, 40+myGLCD.getFontYsize());
+    myGLCD.setColor(0, 150, 0);
     myGLCD.printNumI((int)getMbar(), 260, 40);
     myGLCD.setFont(BigFont);
     myGLCD.setColor(80, 120, 80);
