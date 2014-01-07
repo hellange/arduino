@@ -7,7 +7,8 @@
 #include <Wire.h>
 #include <UTFT.h>            // http://www.henningkarlsen.com/electronics
 #include <UTouch.h>          // http://www.henningkarlsen.com/electronics
-#include <Adafruit_BMP085.h> // https://github.com/adafruit/Adafruit-BMP085-Library
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP085_U.h>
 #include <Timezone.h>        // https://github.com/JChristensen/Timezone
 #include <DS1307RTC.h>       // http://playground.arduino.cc//Code/Time
 #include <Time.h>            // http://playground.arduino.cc//Code/Time
@@ -21,8 +22,8 @@ extern uint8_t SevenSegNumFont[];
 // Using Arduino Mega and 3.2' TFT LCD 240x400 Display
 UTFT myGLCD(TFT01_32WD,38,39,40,41);
 UTouch myTouch(6,5,4,3,2);
-Adafruit_BMP085 bmp;
-
+//Adafruit_BMP085 bmp;
+Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 boolean pressMode = false;
 bool menuMode = false;
 
@@ -49,6 +50,8 @@ void setup(){
   // Uncomment to set date
   //setDateTime();
   
+
+  
 }
 
 
@@ -70,12 +73,12 @@ time_t lastMoonPhaseRender = now() - 1000L;
 
 void renderDisplay(){
   
-  if (now() - lastMoonPhaseRender > 5) {
+  if (now() - lastMoonPhaseRender > 30) {
     showMoonPhase(10,30);
     lastMoonPhaseRender = now();
   }
 
-  if (now() - lastPressureRender > 5){
+  if (now() - lastPressureRender > 30){
     showPressure();
     lastPressureRender = now();
   }
@@ -199,7 +202,7 @@ void checkTouch(){
        myGLCD.setColor(0,255,0);
        myGLCD.setBackColor(0,0,0);
        //myGLCD.print("Menu On ", 170, 210);
-       showMoonPhaseWeek(0,150);
+       showMoonPhaseWeek(5,150);
     } else {
       menuMode = false;
        myGLCD.setColor(0,0,0);
@@ -340,6 +343,21 @@ void showMoonImage(int phase,int x,int y){
 }
 
 //******************* PRESSURE ***************************
+  void displaySensorDetails(void)
+{
+  sensor_t sensor;
+  bmp.getSensor(&sensor);
+  Serial.println("------------------------------------");
+  Serial.print ("Sensor: "); Serial.println(sensor.name);
+  Serial.print ("Driver Ver: "); Serial.println(sensor.version);
+  Serial.print ("Unique ID: "); Serial.println(sensor.sensor_id);
+  Serial.print ("Max Value: "); Serial.print(sensor.max_value); Serial.println(" hPa");
+  Serial.print ("Min Value: "); Serial.print(sensor.min_value); Serial.println(" hPa");
+  Serial.print ("Resolution: "); Serial.print(sensor.resolution); Serial.println(" hPa");
+  Serial.println("------------------------------------");
+  Serial.println("");
+  delay(500);
+}
 void showPressure()
 {
   myGLCD.setFont(BigFont);
@@ -347,6 +365,7 @@ void showPressure()
     myGLCD.print("Could not find a valid BMP085 pressure sensor.", CENTER, 0);
     myGLCD.print("Anything connected at all ???", CENTER, 45);
   } else {
+    displaySensorDetails();
     myGLCD.setFont(SevenSegNumFont);
     myGLCD.setColor(0, 0, 0);
     myGLCD.fillRect(260, 40, 260+myGLCD.getFontXsize()*4, 40+myGLCD.getFontYsize());
@@ -359,7 +378,13 @@ void showPressure()
 }
 
 float getMbar(){
-  return bmp.readPressure()/100;
+  /* Get a new sensor event */
+  sensors_event_t event;
+  bmp.getEvent(&event);
+  if (event.pressure)
+  { 
+    return event.pressure;
+  }
 }
 
 // *************** TEMP ******************
@@ -374,7 +399,9 @@ void showTemperature()
     int y = 150;
     myGLCD.setColor(0, 150, 0);
     myGLCD.setFont(SevenSegNumFont);
-    float fTemp = bmp.readTemperature();
+    float fTemp;
+    bmp.getTemperature(&fTemp);
+    //float fTemp = bmp.readTemperature();
     myGLCD.printNumI((int)fTemp, 260, y);
     float dec = (fTemp - (int)fTemp) * 10; // first decimal
     myGLCD.setFont(BigFont);
