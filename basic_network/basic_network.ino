@@ -16,8 +16,6 @@ void setup()
   GD.ClearColorRGB(0x103000);
   GD.Clear();
   GD.cmd_text(240, 50, 31, OPT_CENTER, "Searching for network...");
-    GD.cmd_number(240, 166, 31, OPT_CENTER, 2000);
-
   GD.swap();
   
    // Open serial communications and wait for port to open:
@@ -30,12 +28,12 @@ void setup()
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
-      GD.begin();
+  //    GD.begin();
 
-     GD.ClearColorRGB(0x103000);
-  GD.Clear();
+     //GD.ClearColorRGB(0x103000);
+  //GD.Clear();
   GD.cmd_text(240, 136, 31, OPT_CENTER, "Failed to configure network");
-  GD.swap();
+  //GD.swap();
     // no point in carrying on, so do nothing forevermore:
     for(;;)
       ;
@@ -62,26 +60,25 @@ void setup()
   strncpy(arr,t,10);
   */
   
-  int t = 10;
-  int a0 = Ethernet.localIP()[0];
+ 
+
+
+   int a0 = Ethernet.localIP()[0];
   int a1 = Ethernet.localIP()[1];
   int a2 = Ethernet.localIP()[2];
   int a3 = Ethernet.localIP()[3];
-
-      GD.begin();
-
-  GD.ClearColorRGB(0x103000);
-  GD.Clear();
-    GD.cmd_text(200, 100, 30, OPT_CENTER, "Ip address:");
+  
+   GD.cmd_text(200, 100, 30, OPT_CENTER, "Ip address:");
 
   GD.cmd_number(200, 136, 30, OPT_CENTER, a0);
   GD.cmd_number(250, 136, 30, OPT_CENTER, a1);
   GD.cmd_number(300, 136, 30, OPT_CENTER, a2);
   GD.cmd_number(350, 136, 30, OPT_CENTER, a3);
+   GD.swap();
 
-  GD.swap();
-  
-  
+  GD.finish();
+    GD.swap();
+
 }
 
 void loop()
@@ -90,4 +87,8 @@ void loop()
  // GD.Clear();
  // GD.cmd_text(240, 136, 31, OPT_CENTER, "Hello world");
  // GD.swap();
+ 
+
+  
+ GD.swap();
 }
