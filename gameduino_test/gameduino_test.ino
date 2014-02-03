@@ -4,16 +4,15 @@
 #include <stdlib.h> // for malloc and free
 //#include <new.h>
 #include <Ethernet.h>
+#include <MsTimer2.h>
 
 //void* operator new(size_t size) { return malloc(size); } 
 //void operator delete(void* ptr) { free(ptr); }
 
 byte mac[] = {  
   0x00, 0xAA, 0xBB, 0xCC, 0xDE, 0xfe };
-char server[] = "google.com";    // name address for Google (using DNS)
-
-
-     EthernetClient client;
+  char server[] = "google.com";    // name address for Google (using DNS)
+  EthernetClient client;
 
 
 static void blocktext(int x, int y, byte font, const char *s)
@@ -44,14 +43,17 @@ class Clock
     void render(){
       GD.ColorA(160);
       
-      GD.ColorRGB(0x0000ff);
+      GD.ColorRGB(0x222288);
       GD.ColorA(255);
 
       blocktext(190+x_pos/10 -1, 80-1, 31, "Clock");
 
-      GD.cmd_number(240, 60, 31, OPT_CENTER, counter ++);
+      GD.cmd_number(240, 60, 31, OPT_CENTER, counter);
       x_pos ++;
       if (x_pos>1000) x_pos = 0;
+  }
+  void inc(){
+     counter ++;
   }
 };
 
@@ -88,6 +90,7 @@ class Network
        }
      }
      char *getStatus(){
+       
        if (hasConnection == true){
          return "Connection successfull !";
        } 
@@ -135,16 +138,17 @@ class Network
      
      void render(){
         if (hasAddress){
+            GD.ColorA(170);
+
           GD.cmd_text(200, 200, 30, OPT_CENTER, "Ip address:");
           GD.cmd_number(200, 226, 29, OPT_CENTER, a0);
           GD.cmd_number(250, 226, 29, OPT_CENTER, a1);
           GD.cmd_number(300, 226, 29, OPT_CENTER, a2);
           GD.cmd_number(350, 226, 29, OPT_CENTER, a3);
         } 
-        //else {
-        //   GD.cmd_text(200, 200, 30, OPT_CENTER, "No connection !");
-        //}
         
+          GD.ColorA(255);
+
         GD.cmd_text(200, 250, 29, OPT_CENTER, getStatus());
         
      }
@@ -167,7 +171,16 @@ void setup()
   GD.cmd_text(200, 100, 30, OPT_CENTER, "Searching for network...");
   GD.swap();
 
+  // set up ISR for timer2.
+  pinMode(13,OUTPUT);
+  MsTimer2::set(1000,flash);
+  MsTimer2::start();
+  
   network->initNetwork();
+  
+  //MsTimer2::stop();
+
+  
   GD.ClearColorRGB(0x104000);
   GD.Clear();
   GD.cmd_text(200, 100, 30, OPT_CENTER, "Done searching...");
@@ -175,20 +188,30 @@ void setup()
 
 }
 
+void flash(){
+
+  
+  clock->inc();
+ }
+
+
 void renderWeather(){
   GD.cmd_text(240, 80, 31, OPT_CENTER, "Weather");
 }
 
 
-void loop(){
 
+
+
+void loop(){
   GD.ClearColorRGB(0x104000);
-  GD.Clear();
-  GD.PointSize(16*30);
+  //GD.Clear();
+  GD.cmd_gradient(0,0,0x0060c0,     0,271,0xc06000);
+  GD.PointSize(16*100);
   GD.Begin(POINTS);
   GD.ColorA(255);
   GD.ColorRGB(0xff8000);
-  GD.Vertex2ii(220,100);
+  GD.Vertex2ii(160,110);
   clock->render();
   weather->render();
   network->render();
