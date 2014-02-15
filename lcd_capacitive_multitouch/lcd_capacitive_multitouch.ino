@@ -1,9 +1,9 @@
-/**************************************************************************
+/************************************************************************
  Capacitive multitouch demo for 7" LCD connected to Arduino.
  
- Written by Helge Langehaug.
+ Written 15 February 2014 by Helge Langehaug.
  Depends on RA8875 library from Adafruit.
- 
+
  Tested with ER-TFTM070-5 from EastRising (bought from buydisplay.com)
  Follow the LCD manual and set resistors and jumpers according to
  4 wire SPI interface for RA8875.
@@ -29,9 +29,7 @@
    35            A4
    34            A5
 
- BSD license.
- All text above must be included in any redistribution.
- *************************************************************************/
+*************************************************************************/
 
 #include <SPI.h>
 #include "Adafruit_GFX.h"
@@ -152,6 +150,19 @@ void setup()
   Serial.println("Setup done.");
 }
 
+void serialDebugOutput(int i,word x,word y){
+  Serial.print("x");
+  Serial.print(i);
+  Serial.print("=");
+  Serial.print(x);
+  Serial.print(",");
+  Serial.print("y");
+  Serial.print(i);
+  Serial.print("=");
+  Serial.print(y);
+  Serial.print("  ");
+}
+
 void loop() 
 {
     Wire.requestFrom(0x38,40); 
@@ -182,20 +193,25 @@ void loop()
     for (byte i = 0; i < nr_of_touches; i++){
       x = coordinates[i * 2];
       y = coordinates[i * 2 + 1];
-      Serial.print(x);
-      Serial.print(",");
-      Serial.print(y);
-      Serial.print(";");
+      
+      // Show coordinates on serial
+      serialDebugOutput(i, x, y);
+      if (i == nr_of_touches - 1){
+        Serial.println(" ");
+      }
+      
+      // Mark touches on screen
+      tft.fillCircle(x, y, 70, RA8875_BLUE);
       tft.fillCircle(x, y, 50, RA8875_RED);
-      tft.fillCircle(x, y, 25, RA8875_WHITE);
+      tft.fillCircle(x, y, 30, RA8875_WHITE);
     }
 
-    Serial.println(" ");
+   
     delay(100);
     for (int i = 0 ; i < nr_of_touches; i++){
       x = coordinates[i * 2];
       y = coordinates[i * 2 + 1];
-      tft.fillCircle(x, y, 50, RA8875_GREEN);
+      tft.fillCircle(x, y, 70, RA8875_GREEN);
     }
   
 }
