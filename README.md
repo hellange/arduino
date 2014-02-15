@@ -1,5 +1,13 @@
-weatherstation2 is ready and functional and presented at http://weather-helge.rhcloud.com/ under the "prototype" menu.
+weatherstation2:
+Ready and functional prototype/experiment of a weather station presented at http://weather-helge.rhcloud.com/ under the "prototype" menu.
 
-weatherstation3 is based on weatherstation2 and is under constant development. Status is presented at  http://weather-helge.rhcloud.com/.
+weatherstation3 :
+Based on weatherstation2 and is under constant development. Status is presented at  http://weather-helge.rhcloud.com/.
+
+lcd_capacitive_multitouch:
+Testing capacitive multitouch on a 7" LCD
+
+gameduino_test:
+testing Gameduino2
 
 
