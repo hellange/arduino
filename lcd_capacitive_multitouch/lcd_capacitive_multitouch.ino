@@ -20,8 +20,8 @@
     7                ICSP_MOSI          SDI / SPI_MOSI
     8                ICSP_SCK           CLK                
     9                NC
-   10                3                  INTERRUPT
-
+   33                2                  CTP_INT touch data ready for read (FROM FT5x06 touch controller)
+   
    12 (why?)         9              RESET
                                     Everything works when connected to TFTM070 pin 12.
                                     It seems to be unstable without it. WHY ???
@@ -51,16 +51,15 @@
 
 
 //                        Arduino pin
-#define RA8875_INT        3
 #define RA8875_CS         10
 #define RA8875_RESET      9    // Adafruit library puts a short low reset pulse at startup on this pin
                                // Is to be connected to reset pin on RA8875.
-
+#define CTP_INT           2    // touch data ready for read
 
 #define SERIAL_DEBUG_ENABLED false  // set to true if you want debug info to serial port
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RESET);
-FT5x06 cmt = FT5x06();
+FT5x06 cmt = FT5x06(CTP_INT);
 
 
 void serialDebugOutput(int nr_of_touches, word *coordinates) {
@@ -115,37 +114,49 @@ void setup()
   Serial.println("Setup done.");
 }
 
- 
+word prev_coordinates[10]; // 5 pairs of x and y
+byte nr_of_touches = 0;
+
 void loop() 
 {
     byte registers[FT5206_NUMBER_OF_REGISTERS];
 
-    // Poll FT5206 for data
-    cmt.getRegisterInfo(registers);
-
-    word coordinates[10]; // 5 pairs of x and y
-    byte nr_of_touches = cmt.getTouchPositions(coordinates, registers);
+    word coordinates[10];
     
+    byte prev_nr_of_touches = 0;
+    
+    if (cmt.touched()){
+    cmt.getRegisterInfo(registers);
+    nr_of_touches = cmt.getTouchPositions(coordinates, registers);
+    prev_nr_of_touches = nr_of_touches;
+
     if (SERIAL_DEBUG_ENABLED){
       printRawRegisterValuesToSerial(registers);
       serialDebugOutput(nr_of_touches, coordinates);
     }
 
+    // remove previous touches on screen
+    Serial.println(prev_nr_of_touches);
+    for (int i = 0 ; i < prev_nr_of_touches; i++){
+      word x = prev_coordinates[i * 2];
+      word y = prev_coordinates[i * 2 + 1];
+      tft.fillCircle(x, y, 70, RA8875_GREEN);
+    }
+    
+    // mark touches on screen
     for (byte i = 0; i < nr_of_touches; i++){
       word x = coordinates[i * 2];
       word y = coordinates[i * 2 + 1];
       
       // Mark touches on screen
       tft.fillCircle(x, y, 70, RA8875_BLUE);
-      tft.fillCircle(x, y, 50, RA8875_RED);
+      tft.fillCircle(x, y, 50, RA8875_WHITE);
       tft.fillCircle(x, y, 30, RA8875_WHITE);
     }
+    delay(10);
+    memcpy(prev_coordinates, coordinates, 20);
 
-    delay(100);
-    for (int i = 0 ; i < nr_of_touches; i++){
-      word x = coordinates[i * 2];
-      word y = coordinates[i * 2 + 1];
-      tft.fillCircle(x, y, 70, RA8875_GREEN);
+
     }
   
 }

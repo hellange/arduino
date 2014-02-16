@@ -63,5 +63,8 @@ class FT5x06 {
   void init(bool serial_output_enabled);
   void getRegisterInfo(byte *registers);
   void printInfo();
+  bool touched();
+ private:
+  _ctpInt;
 };
 

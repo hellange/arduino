@@ -11,8 +11,8 @@ BSD license, all text above must be included in any redistribution
 #include "Wire.h"
 #include "FT5x06.h"
 
-
-  FT5x06::FT5x06(){
+  FT5x06::FT5x06(uint8_t CTP_INT){
+    _ctpInt = CTP_INT;
   }
   
   byte FT5x06::getTouchPositions(word *touch_coordinates, byte *reg){
@@ -41,13 +41,22 @@ BSD license, all text above must be included in any redistribution
     return nr_of_touches;
   }
 
-  /*
+
   // interrupts for touch detection
-  volatile int value = 0;
-  void gotit(){
-    value++;
+  volatile bool newTouch = false;
+  
+  void touch_interrupt(){
+    newTouch = true;
   }
-  */
+  
+  bool FT5x06::touched(){
+    if (newTouch == true){
+      newTouch = false;
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   void FT5x06::init(bool serial_output_enabled) {
     
@@ -56,11 +65,11 @@ BSD license, all text above must be included in any redistribution
       Serial.println("Trying to initialize FT5x06 by I2C");
     }
 
-    /*
+    
     // Interrupt
-    pinMode(2,INPUT);
-    attachInterrupt(0,gotit,FALLING);
-    */
+    pinMode(_ctpInt ,INPUT);
+    attachInterrupt(0,touch_interrupt,FALLING);
+   
 
     Wire.begin();
     Wire.beginTransmission(FT5206_I2C_ADDRESS);
