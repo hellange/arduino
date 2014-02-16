@@ -57,7 +57,7 @@
                                // Is to be connected to reset pin on RA8875.
 
 
-#define SERIAL_DEBUG_ENABLED true
+#define SERIAL_DEBUG_ENABLED false  // set to true if you want debug info to serial port
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RESET);
 FT5x06 cmt = FT5x06();
@@ -125,7 +125,9 @@ void loop()
     word coordinates[10]; // 5 pairs of x and y
     byte nr_of_touches = cmt.getTouchPositions(coordinates, registers);
     
-    serialDebugOutput(nr_of_touches, coordinates);
+    if (SERIAL_DEBUG_ENABLED){
+      serialDebugOutput(nr_of_touches, coordinates);
+    }
 
     for (byte i = 0; i < nr_of_touches; i++){
       word x = coordinates[i * 2];
