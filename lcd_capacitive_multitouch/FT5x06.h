@@ -58,13 +58,13 @@ BSD license, all text above must be included in any redistribution
 
 class FT5x06 {
  public:
-  FT5x06();
+  FT5x06(uint8_t CTP_INT);
   byte getTouchPositions(word *touch_coordinates, byte *reg);
   void init(bool serial_output_enabled);
   void getRegisterInfo(byte *registers);
   void printInfo();
   bool touched();
  private:
-  _ctpInt;
+  uint8_t _ctpInt;
 };
 

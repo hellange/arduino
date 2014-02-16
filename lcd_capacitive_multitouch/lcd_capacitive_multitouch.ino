@@ -1,4 +1,4 @@
-/************************************************************************
+/***************************************************************************************
  Capacitive multitouch demo for 7" LCD connected to Arduino.
  
  Written 15 February 2014 by Helge Langehaug.
@@ -19,29 +19,15 @@
     6                ICSP_MISO          SDO / SPI_MISO
     7                ICSP_MOSI          SDI / SPI_MOSI
     8                ICSP_SCK           CLK                
-    9                NC
-   33                2                  CTP_INT touch data ready for read (FROM FT5x06 touch controller)
+   33                2                  CTP_INT touch data ready be read 
+                                        from FT5x06 touch controller
+   35                A4                 I2C for FT5x06 (preconfigured)
+   34                A5                 I2C for FT5x06 (preconfigured)
    
-   12 (why?)         9              RESET
-                                    Everything works when connected to TFTM070 pin 12.
-                                    It seems to be unstable without it. WHY ???
-                                    Was originally though to go to TFTM070 pin 11 (reset).
-                                    Was by mistake connected to TFTM070 pin 12. Luck ?  
-                                    Why does this work ?
-                                    Especially when the doc says that TFTM070 pin 11 and 12 are NC !!!
-                                    Reset should not be needed at all because according to
-                                    doc it is on-board.
-                                    Soldering problem on my side ???
-                                    To be examined !!!!
+   12 (why?)         GND                TFTM070 board is not stable if this pin is not connected. 
+                                        Could be a soldering or wire fault on my board.
 
-
- Touch sensor FT5206 is preconfigured for I2C communication, connect:
-
-   LCD(40) pin   Arduino UNO pin
-   35            A4
-   34            A5
-
-*************************************************************************/
+****************************************************************************************/
 
 #include <SPI.h>
 #include "Adafruit_GFX.h"
@@ -51,10 +37,11 @@
 
 
 //                        Arduino pin
-#define RA8875_CS         10
-#define RA8875_RESET      9    // Adafruit library puts a short low reset pulse at startup on this pin
-                               // Is to be connected to reset pin on RA8875.
-#define CTP_INT           2    // touch data ready for read
+#define RA8875_CS         10   // RA8875 chip select for ISP communication
+#define RA8875_RESET      9    // Adafruit library puts a short low reset pulse at startup on this pin. 
+                               // Not relevant for TFTM070 according to doc.
+                               
+#define CTP_INT           2    // touch data ready for read from FT5x06 touch controller
 
 #define SERIAL_DEBUG_ENABLED false  // set to true if you want debug info to serial port
 
@@ -100,7 +87,7 @@ void setup()
   }
 
   Serial.println("Found RA8875");
-  //delay(100);
+
   //cmt.printInfo();
 
   tft.displayOn(true);
@@ -136,7 +123,6 @@ void loop()
     }
 
     // remove previous touches on screen
-    Serial.println(prev_nr_of_touches);
     for (int i = 0 ; i < prev_nr_of_touches; i++){
       word x = prev_coordinates[i * 2];
       word y = prev_coordinates[i * 2 + 1];
