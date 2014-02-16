@@ -1,16 +1,16 @@
 /************************************************************************
-    @file     FT5x06.h
-    @author   Helge Langehaug
-    @license  BSD license, all text above and below must be included in
-              any redistribution
-
 This is a library to handling capacitive multitouch sensors using FT5x06.
 Originally written to work with ER-TFTM070-5 (LCD module) from EastRising.
+
+Written by Helge Langehaug, February 2014
+
+BSD license, all text above must be included in any redistribution
 *************************************************************************/
 
 
 /* FT5206 definitions */
 #define FT5206_I2C_ADDRESS 0x38
+#define FT5206_NUMBER_OF_REGISTERS 50
 
 #define FT5206_DEVICE_MODE 0x00
 
@@ -53,10 +53,8 @@ Originally written to work with ER-TFTM070-5 (LCD module) from EastRising.
 class FT5x06 {
  public:
   FT5x06();
-
   byte getTouchPositions(word *touch_coordinates, byte *reg);
-  void init();
-  void serialDebugOutput(int i,word x,word y);
+  void init(bool serial_output_enabled);
   void getRegisterInfo(byte *registers);
 };
 

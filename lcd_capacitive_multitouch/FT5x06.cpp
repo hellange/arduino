@@ -1,11 +1,10 @@
 /************************************************************************
-    @file     FT5x06.cpp
-    @author   Helge Langehaug
-    @license  BSD license, all text above and below must be included in
-              any redistribution
-
 This is a library to handling capacitive multitouch sensors using FT5x06.
 Originally written to work with ER-TFTM070-5 (LCD module) from EastRising.
+
+Written by Helge Langehaug, February 2014
+
+BSD license, all text above must be included in any redistribution
 *************************************************************************/
 
 #include <SPI.h>
@@ -15,6 +14,7 @@ Originally written to work with ER-TFTM070-5 (LCD module) from EastRising.
 
   FT5x06::FT5x06(){
   }
+  
   byte FT5x06::getTouchPositions(word *touch_coordinates, byte *reg){
     
     byte nr_of_touches = reg[FT5206_TD_STATUS] & 0xF;
@@ -49,9 +49,12 @@ Originally written to work with ER-TFTM070-5 (LCD module) from EastRising.
   }
   */
 
-  void FT5x06::init() {
-    Serial.begin(9600);
-    Serial.println("Trying to initialize FT5x06 by I2C");
+  void FT5x06::init(bool serial_output_enabled) {
+    
+    if(serial_output_enabled){
+      Serial.begin(9600);
+      Serial.println("Trying to initialize FT5x06 by I2C");
+    }
 
     /*
     // Interrupt
@@ -59,35 +62,24 @@ Originally written to work with ER-TFTM070-5 (LCD module) from EastRising.
     attachInterrupt(0,gotit,FALLING);
     */
 
-  
     Wire.begin();
     Wire.beginTransmission(FT5206_I2C_ADDRESS);
     Wire.write(FT5206_DEVICE_MODE);
     Wire.write(0);
     Wire.endTransmission(FT5206_I2C_ADDRESS);
   
-    Serial.println("Setup done.");
-  }
-
-  void FT5x06::serialDebugOutput(int i,word x,word y) {
-    Serial.print("x");
-    Serial.print(i);
-    Serial.print("=");
-    Serial.print(x);
-    Serial.print(",");
-    Serial.print("y");
-    Serial.print(i);
-    Serial.print("=");
-    Serial.print(y);
-    Serial.print("  ");
+    if(serial_output_enabled){
+      Serial.println("Setup done.");
+    } 
   }
 
   void FT5x06::getRegisterInfo(byte *registers) {
-    int pos = 0;
+    Wire.requestFrom(FT5206_I2C_ADDRESS, FT5206_NUMBER_OF_REGISTERS); 
+    int register_number = 0;
     // get all register bytes when available
     while(Wire.available())
     {
-      registers[pos++] = Wire.read();
+      registers[register_number++] = Wire.read();
     }
   }
 

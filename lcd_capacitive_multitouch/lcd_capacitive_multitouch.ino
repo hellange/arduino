@@ -56,10 +56,40 @@
 #define RA8875_RESET      9    // Adafruit library puts a short low reset pulse at startup on this pin
                                // Is to be connected to reset pin on RA8875.
 
+
+#define SERIAL_DEBUG_ENABLED true
+
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RESET);
 FT5x06 cmt = FT5x06();
 
- 
+
+void serialDebugOutput(int nr_of_touches, word *coordinates) {
+  for (byte i = 0; i < nr_of_touches; i++){
+
+    word x = coordinates[i * 2];
+    word y= coordinates[i * 2 + 1];
+    
+    Serial.print("x");
+    Serial.print(i);
+    Serial.print("=");
+    Serial.print(x);
+    Serial.print(",");
+    Serial.print("y");
+    Serial.print(i);
+    Serial.print("=");
+    Serial.print(y);
+    Serial.print("  ");
+  }
+}
+
+void printRawRegisterValuesToSerial(byte *registers) {
+    // print raw register values
+    for (int i =0;i<40;i++){
+      Serial.print(registers[i],HEX);
+      Serial.print(",");
+    }
+    Serial.println("");
+}
 
 void setup() 
 {
@@ -72,21 +102,13 @@ void setup()
 
   Serial.println("Found RA8875");
 
-
   tft.displayOn(true);
   tft.GPIOX(true);                              // Enable TFT - display enable tied to GPIOX
   tft.PWM1config(true, RA8875_PWM_CLK_DIV1024); // PWM output for backlight
   tft.PWM1out(255);  
   tft.fillScreen(RA8875_GREEN);
   
-  cmt.init();
-  /*
-  Wire.begin();
-  Wire.beginTransmission(FT5206_I2C_ADDRESS);
-  Wire.write(FT5206_DEVICE_MODE);
-  Wire.write(0);
-  Wire.endTransmission(FT5206_I2C_ADDRESS);
-  */
+  cmt.init(SERIAL_DEBUG_ENABLED);
   
   Serial.println("Setup done.");
 }
@@ -94,36 +116,20 @@ void setup()
  
 void loop() 
 {
-    Wire.requestFrom(0x38,40); 
-    char buffer[50];
-    byte registers[50];
-    int pos = 0;
+    byte registers[FT5206_NUMBER_OF_REGISTERS];
 
+    // Poll FT5206 for data
     cmt.getRegisterInfo(registers);
+    printRawRegisterValuesToSerial(registers);
 
-    /*
-    // print raw register values
-    for (int i =0;i<40;i++){
-      Serial.print(reg[i],HEX);
-      Serial.print(",");
-    }
-    //  Serial.println("");
-    */
- 
     word coordinates[10]; // 5 pairs of x and y
-    byte nr_of_touches = cmt.getTouchPositions(coordinates,registers);
+    byte nr_of_touches = cmt.getTouchPositions(coordinates, registers);
     
-    word x;
-    word y;
+    serialDebugOutput(nr_of_touches, coordinates);
+
     for (byte i = 0; i < nr_of_touches; i++){
-      x = coordinates[i * 2];
-      y = coordinates[i * 2 + 1];
-      
-      // Show coordinates on serial
-      cmt.serialDebugOutput(i, x, y);
-      if (i == nr_of_touches - 1){
-        Serial.println(" ");
-      }
+      word x = coordinates[i * 2];
+      word y = coordinates[i * 2 + 1];
       
       // Mark touches on screen
       tft.fillCircle(x, y, 70, RA8875_BLUE);
@@ -131,11 +137,10 @@ void loop()
       tft.fillCircle(x, y, 30, RA8875_WHITE);
     }
 
-   
     delay(100);
     for (int i = 0 ; i < nr_of_touches; i++){
-      x = coordinates[i * 2];
-      y = coordinates[i * 2 + 1];
+      word x = coordinates[i * 2];
+      word y = coordinates[i * 2 + 1];
       tft.fillCircle(x, y, 70, RA8875_GREEN);
     }
   
