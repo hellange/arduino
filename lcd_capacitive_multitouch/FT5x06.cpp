@@ -82,5 +82,25 @@ BSD license, all text above must be included in any redistribution
       registers[register_number++] = Wire.read();
     }
   }
+  
+  void FT5x06::printInfo(){
+    byte registers[FT5206_NUMBER_OF_TOTAL_REGISTERS];
+    Wire.requestFrom(FT5206_I2C_ADDRESS, FT5206_NUMBER_OF_TOTAL_REGISTERS); 
+    int register_number = 0;
+    // get all register bytes when available
+    while(Wire.available())
+    {
+      registers[register_number++] = Wire.read();
+      delay(5);
+    }
+    delay(10);
+    // Might be that the interpretation of high/low bit is not same as major/minor version...
+    Serial.print("Library version: ");
+    Serial.print(registers[FS5206_TOUCH_LIB_VERSION_H]);
+    Serial.print(".");
+    Serial.print(registers[FS5206_TOUCH_LIB_VERSION_L]);
+    Serial.println(".");
+
+  }
 
 

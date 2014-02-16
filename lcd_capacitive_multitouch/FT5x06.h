@@ -10,7 +10,10 @@ BSD license, all text above must be included in any redistribution
 
 /* FT5206 definitions */
 #define FT5206_I2C_ADDRESS 0x38
-#define FT5206_NUMBER_OF_REGISTERS 50
+#define FT5206_NUMBER_OF_REGISTERS 31     // there are more registers, but this
+                                          // is enought to get all 5 touch coordinates.
+                                          
+#define FT5206_NUMBER_OF_TOTAL_REGISTERS 0xFE
 
 #define FT5206_DEVICE_MODE 0x00
 
@@ -50,11 +53,15 @@ BSD license, all text above must be included in any redistribution
 #define FT5206_TOUCH5_YH 0x1d
 #define FT5206_TOUCH5_YL 0x1e
 
+#define FS5206_TOUCH_LIB_VERSION_H 0xa1
+#define FS5206_TOUCH_LIB_VERSION_L 0xa2
+
 class FT5x06 {
  public:
   FT5x06();
   byte getTouchPositions(word *touch_coordinates, byte *reg);
   void init(bool serial_output_enabled);
   void getRegisterInfo(byte *registers);
+  void printInfo();
 };
 

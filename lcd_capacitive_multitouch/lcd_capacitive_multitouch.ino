@@ -84,7 +84,7 @@ void serialDebugOutput(int nr_of_touches, word *coordinates) {
 
 void printRawRegisterValuesToSerial(byte *registers) {
     // print raw register values
-    for (int i =0;i<40;i++){
+    for (int i = 0;i < FT5206_NUMBER_OF_REGISTERS ; i++){
       Serial.print(registers[i],HEX);
       Serial.print(",");
     }
@@ -101,6 +101,8 @@ void setup()
   }
 
   Serial.println("Found RA8875");
+  //delay(100);
+  //cmt.printInfo();
 
   tft.displayOn(true);
   tft.GPIOX(true);                              // Enable TFT - display enable tied to GPIOX
@@ -120,12 +122,12 @@ void loop()
 
     // Poll FT5206 for data
     cmt.getRegisterInfo(registers);
-    printRawRegisterValuesToSerial(registers);
 
     word coordinates[10]; // 5 pairs of x and y
     byte nr_of_touches = cmt.getTouchPositions(coordinates, registers);
     
     if (SERIAL_DEBUG_ENABLED){
+      printRawRegisterValuesToSerial(registers);
       serialDebugOutput(nr_of_touches, coordinates);
     }
 
