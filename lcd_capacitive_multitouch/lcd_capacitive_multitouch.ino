@@ -4,7 +4,7 @@
  Written 15 February 2014 by Helge Langehaug.
  Depends on RA8875 library from Adafruit.
 
- Tested with ER-TFTM070-5 from EastRising (bought from buydisplay.com)
+ Tested with ER-TFTM070-5 (LCD) from EastRising (bought from buydisplay.com)
  Follow the LCD manual and set resistors and jumpers according to
  4 wire SPI interface for RA8875.
  Connect LCD SPI to Arduino UNO SPI(using ICSP pins)
@@ -12,16 +12,28 @@
  
  RA8875 communication, connect:
  
-   LCD(40) pin   Arduino UNO pin    Description
-    1,2                             GND
-    3,4                             VCC
-    5            10                 SPI SELECT
-    6            ICSP_MISO          SDO / SPI_MISO
-    7            ICSP_MOSI          SDI / SPI_MOSI
-    8            ICSP_SCK           CLK                
-    9            NC
-   10            3                  INTERRUPT
-   11            9                  RESET
+   TFTM070(40 pin)   Arduino UNO pin    Description
+    1,2                                 GND
+    3,4                                 VCC
+    5                10                 SPI SELECT
+    6                ICSP_MISO          SDO / SPI_MISO
+    7                ICSP_MOSI          SDI / SPI_MOSI
+    8                ICSP_SCK           CLK                
+    9                NC
+   10                3                  INTERRUPT
+
+   12 (why?)         9              RESET
+                                    Everything works when connected to TFTM070 pin 12.
+                                    It seems to be unstable without it. WHY ???
+                                    Was originally though to go to TFTM070 pin 11 (reset).
+                                    Was by mistake connected to TFTM070 pin 12. Luck ?  
+                                    Why does this work ?
+                                    Especially when the doc says that TFTM070 pin 11 and 12 are NC !!!
+                                    Reset should not be needed at all because according to
+                                    doc it is on-board.
+                                    Soldering problem on my side ???
+                                    To be examined !!!!
+
 
  Touch sensor FT5206 is preconfigured for I2C communication, connect:
 
@@ -77,10 +89,11 @@
 #define FT5206_TOUCH5_YH 0x1d
 #define FT5206_TOUCH5_YL 0x1e
 
-//                   Arduino pin
-#define RA8875_INT       3
-#define RA8875_CS       10
-#define RA8875_RESET     9
+//                        Arduino pin
+#define RA8875_INT        3
+#define RA8875_CS         10
+#define RA8875_RESET      9    // Adafruit library puts a short low reset pulse at startup on this pin
+                               // Is to be connected to reset pin on RA8875.
 
 Adafruit_RA8875 tft = Adafruit_RA8875(RA8875_CS, RA8875_RESET);
 

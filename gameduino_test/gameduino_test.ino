@@ -165,6 +165,9 @@ void setup()
   weather = new Weather();
   network = new Network();
   
+
+
+
   GD.begin();
   GD.ClearColorRGB(0x104000);
   GD.Clear();
@@ -185,6 +188,11 @@ void setup()
   GD.Clear();
   GD.cmd_text(200, 100, 30, OPT_CENTER, "Done searching...");
   GD.swap();
+  
+  
+  GD.cmd_loadimage(0, 0);
+  GD.load("back_50.jpg");
+  //GD.load("healsky3.jpg");
 
 }
 
@@ -205,8 +213,12 @@ void renderWeather(){
 
 void loop(){
   GD.ClearColorRGB(0x104000);
-  //GD.Clear();
-  GD.cmd_gradient(0,0,0x0060c0,     0,271,0xc06000);
+  GD.Clear();
+  
+  GD.Begin(BITMAPS);
+  GD.Vertex2ii(0, 0);
+
+  //GD.cmd_gradient(0,0,0x0060c0,     0,271,0xc06000);
   GD.PointSize(16*100);
   GD.Begin(POINTS);
   GD.ColorA(255);
