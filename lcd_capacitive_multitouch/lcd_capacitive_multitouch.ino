@@ -21,11 +21,15 @@
     8                ICSP_SCK           CLK                
    33                2                  CTP_INT touch data ready be read 
                                         from FT5x06 touch controller
-   35                A4                 I2C for FT5x06 (preconfigured)
-   34                A5                 I2C for FT5x06 (preconfigured)
+   34                A4                 I2C for FT5x06 (preconfigured)
+   35                A5                 I2C for FT5x06 (preconfigured)
    
-   12 (why?)         GND                TFTM070 board is not stable if this pin is not connected. 
-                                        Could be a soldering or wire fault on my board.
+   12 (why?)         9                  TFTM070 board is not stable if this pin is not connected. 
+                                        Could be a soldering or wire fault on my board ??
+                                        The Adafruit library puts a reset pulse on that pin but
+                                        according to board pin 12 is not connected...
+                                        So this could be different on other boards... 
+                                        To be examined.
 
 ****************************************************************************************/
 
@@ -85,7 +89,6 @@ void setup()
     Serial.println("RA8875 Not Found!");
     while (1);
   }
-
   Serial.println("Found RA8875");
 
   //cmt.printInfo();
@@ -95,6 +98,12 @@ void setup()
   tft.PWM1config(true, RA8875_PWM_CLK_DIV1024); // PWM output for backlight
   tft.PWM1out(255);  
   tft.fillScreen(RA8875_GREEN);
+  
+  tft.textMode();
+  tft.textSetCursor(10, 10);
+  tft.textTransparent(RA8875_WHITE);
+  tft.textEnlarge(1);
+  tft.textWrite("Capacitive touch sensor demo. Touch me !");
   
   cmt.init(SERIAL_DEBUG_ENABLED);
   
