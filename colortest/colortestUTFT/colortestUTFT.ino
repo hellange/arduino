@@ -1,4 +1,3 @@
-//#include <Wire.h>
 #include <UTFT.h>
 
 // Declare which fonts we will be using
@@ -6,15 +5,20 @@ extern uint8_t SmallFont[];
 extern uint8_t BigFont[];
 extern uint8_t SevenSegNumFont[];
 
-UTFT myGLCD(CTE35IPS,38,39,40,41);
+UTFT myGLCD(CTE35IPS,38,39,40,41);   // 320x480
+int width = 30;
+int height = 100;
+
+//UTFT myGLCD(TFT01_32WD,38,39,40,41);   // 240x400
+//int width = 30;
+//int height = 100;
 
 void setup()
 {
 }
 
 int x = 0;
-int width = 48;
-int height = 140;
+
 const int nr = 10;
 const uint32_t row1[nr] = {0xff0000, 0x00ff00, 0x0000ff, 0x880000, 0x008800, 0x000088, 0x888888, 0xffff00, 0x00ffff, 0xff00ff}; 
 const uint32_t row2[nr] = {0x0060c0, 0xc060e0, 0x003333, 0x009999, 0x104000, 0x001040, 0x004080, 0x404040, 0x440000, 0x004400};
