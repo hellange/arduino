@@ -10,4 +10,7 @@ Testing capacitive multitouch on a 7" LCD
 gameduino_test:
 testing Gameduino2
 
+colortest:
+Creates color bars on LCD display. Shall be used to determine quality differences between LCDs.
+
 
