@@ -1,17 +1,18 @@
 #include <EEPROM.h>
 #include <SPI.h>
 #include <GD2.h>
-#include <UTFT.h>
+
 void setup()
 {
 }
 
 int x = 0;
-int width = 48;
-int height = 140;
-const int nr = 10;
-const uint32_t row1[nr] = {0xff0000, 0x00ff00, 0x0000ff, 0x880000, 0x008800, 0x000088, 0x888888, 0xffff00, 0x00ffff, 0xff00ff}; 
-const uint32_t row2[nr] = {0x0060c0, 0xc060e0, 0x003333, 0x009999, 0x104000, 0x001040, 0x004080, 0x404040, 0x440000, 0x004400};
+const int bars = 10;
+
+int width = 480 / bars;
+int height = 272 / 2;
+const uint32_t row1[bars] = {0xff0000, 0x00ff00, 0x0000ff, 0x880000, 0x008800, 0x000088, 0x888888, 0xffff00, 0x00ffff, 0xff00ff}; 
+const uint32_t row2[bars] = {0x0060c0, 0xc060e0, 0x003333, 0x009999, 0x104000, 0x001040, 0x004080, 0x404040, 0x440000, 0x004400};
 
 void drawGDRectangle(uint32_t color, int x1,int y1, int x2,int y2){
     GD.ColorRGB(color);
@@ -26,12 +27,12 @@ void drawGD(){
   GD.Clear();
 
   // first row
-  for (int i = 0; i<nr; i++){ 
+  for (int i = 0; i<bars; i++){ 
     drawGDRectangle(row1[i], i*width, 0, (i+1)*width, height);
   }
   
   // second row
-  for (int i = 0; i<nr; i++){ 
+  for (int i = 0; i<bars; i++){ 
     drawGDRectangle(row2[i], i*width, height, (i+1)*width, height*2);
   } 
     
