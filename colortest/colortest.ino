@@ -1,22 +1,30 @@
 #include <EEPROM.h>
 #include <SPI.h>
-#include "ColortestGD.h"
+#include "Colortest.h"
+
+// --------- Gameduino FT800 ------------
+#include <GD2.h>
+//#include "ColortestGD.h"
+
+// ---------UTFT library ------------
+#include <UTFT.h>
 //#include "ColortestUTFT.h"
-#include "Colortest8875.h"
+
+// ---------Adafruit RA8875 library ------------
 #include <Adafruit_GFX.h>
 #include <Adafruit_RA8875.h>
-#include <UTFT.h>
-#include <GD2.h>
+#include "Colortest8875.h"
 
-//ColortestGD ct = ColortestGD();
-//ColortestUTFT ct = ColortestUTFT();
-Colortest8875 ct = Colortest8875();
+// Uncomment the version you want to use (and uncomment the corresponding includes)
+Colortest *ct = new Colortest8875();
+//Colortest *ct = new ColortestUTFT();
+//Colortest *ct = new ColortestGD();
 
 void setup()
 {
   Serial.begin(9600);
   Serial.println("Init");
-  ct.init();
+  ct->init();
   Serial.println("Initialized");
 }
 
@@ -27,18 +35,18 @@ const uint32_t row2[bars] = {0x0060c0, 0xc060e0, 0x003333, 0x009999, 0x104000, 0
 
 void drawIt(){
 
-  int barWidth = ct.width/bars;
+  int barWidth = ct->width/bars;
   // first row
   for (int i = 0; i<bars; i++){ 
-    ct.drawRectangle(row1[i], i*barWidth, 0, (i+1)*barWidth, ct.height/2);
+    ct->drawRectangle(row1[i], i*barWidth, 0, (i+1)*barWidth, ct->height/2);
   }
   
   // second row
   for (int i = 0; i<bars; i++){ 
-    ct.drawRectangle(row2[i], i*barWidth, ct.height/2, (i+1)*barWidth, ct.height);
+    ct->drawRectangle(row2[i], i*barWidth, ct->height/2, (i+1)*barWidth, ct->height);
   } 
     
-  ct.text();
+  ct->text();
 }
 
 void loop(){
