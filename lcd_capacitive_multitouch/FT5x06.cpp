@@ -68,7 +68,11 @@ BSD license, all text above must be included in any redistribution
     
     // Interrupt
     pinMode(_ctpInt ,INPUT);
+#ifdef digitalPinToInterrupt
+    attachInterrupt(digitalPinToInterrupt(_ctpInt),touch_interrupt,FALLING);
+#else
     attachInterrupt(0,touch_interrupt,FALLING);
+#endif
    
 
     Wire.begin();
