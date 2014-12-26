@@ -8,7 +8,7 @@
 #define RA8875_CS         10   // RA8875 chip select for ISP communication
 #define RA8875_RESET      9    // Adafruit library puts a short low reset pulse at startup on this pin. 
                                // Not relevant for TFTM070 according to doc.            
-Adafruit_RA8875 *tft;// = new Adafruit_RA8875(RA8875_CS, RA8875_RESET);
+Adafruit_RA8875 *tft;
 
 Colortest8875::Colortest8875(){
 }
