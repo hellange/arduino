@@ -13,4 +13,4 @@ testing Gameduino2
 colortest:
 Creates color bars on LCD display. Shall be used to determine quality differences between LCDs.
 
-
+rftoy_scanner: 2.4GHz scanner running on rftoy. Based on "poor mans rf scanner"
