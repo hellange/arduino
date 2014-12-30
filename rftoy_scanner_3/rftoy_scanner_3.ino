@@ -14,28 +14,21 @@ Adafruit_SSD1306 display(OLED_RESET);
 // to work with RFToy.
 // Uses Adafruit SSD1306 graphics library.
 
-
 // PORTB = 8..13 digital   10 is bit2
 // PORTC = 0..5 analog  
 // Mirf.csnPin = 16;
 // Mirf.cePin = 17;
-// RFTOY  PC2 analog ADC2  CSN  = PORTC bit 2
-// RFTOY  PC3 analog ADC3  CE = PORTC bit 3
-
-#define CE 17
+// RFTOY PC2 analog ADC2  CSN  = PORTC bit 2
+// RFTOY PC3 analog ADC3  CE = PORTC bit 3
 
 // Array to hold Channel data
 #define CHANNELS  127
 int channel[CHANNELS];
 
+// channel span
+int stop_ch = CHANNELS;
+int start_ch = 10;
 
-   int stop_ch = CHANNELS;
-      int start_ch = 10;
-      
-      
-// greyscale mapping
-int  line;
-//char grey[] = " .:-=+*aRW";
 
 // nRF24L01P registers we need
 #define _NRF24_CONFIG      0x00
@@ -49,16 +42,13 @@ byte getRegister(byte r)
 {
  byte c;
 
-
-
- PORTB &=~_BV(2); // pin 10
+ //PORTB &=~_BV(2); // pin 10
  PORTC &=~_BV(2);  
 
  c = SPI.transfer(r&0x1F);
  c = SPI.transfer(0);  
  
- 
- PORTB |= _BV(2);  // pin10
+ //PORTB |= _BV(2);  // pin10
  PORTC |= _BV(2);   
 
  return(c);
@@ -67,12 +57,12 @@ byte getRegister(byte r)
 // set the value of a nRF24L01p register
 void setRegister(byte r, byte v)
 {
- PORTB &=~_BV(2);  // pin 10
+ //PORTB &=~_BV(2);  // pin 10
  PORTC &=~_BV(2); 
 
  SPI.transfer((r&0x1F)|0x20);
  SPI.transfer(v);
- PORTB |= _BV(2);  // pin 10
+ //PORTB |= _BV(2);  // pin 10
  PORTC |= _BV(2);  
 
 }
@@ -117,20 +107,16 @@ void setRX(void)
 void scanChannels(void)
 {
  disable();
-   display.setTextSize(1);
-  display.setTextColor(WHITE);
-  bool show = true;
-  int sweeps = 50;
+ display.setTextSize(1);
+ display.setTextColor(WHITE);
+ bool show = true;
+ int sweeps = 50;
 
-  display.setCursor(0,0);
-  display.print("Scanning");
+ display.setCursor(0,0);
+ display.print("Scanning");
 
-
- for( int j=0 ; j<sweeps  ; j++)
- 
+ for( int j=0 ; j<sweeps  ; j++) 
  {
-    
-   
    if (j%5 == 0){
      /*
       display.drawLine(0, 0, 100, 0, BLACK);
@@ -152,21 +138,13 @@ void scanChannels(void)
        show = true;
        display.print("Scanning ch:");
        display.print(j);
-
-
      }
      */
-   
-    
-     
-   
-  
      display.drawLine(0, 10, j*50/sweeps, 10, WHITE);
    }
    display.display();
 
    int barHeight = 0;
-
 
    for( int i=start_ch ; i<stop_ch ; i++)
    {
@@ -190,7 +168,6 @@ void scanChannels(void)
      //  barHeight = channel[i];
      //  if( barHeight>9 ) barHeight = 9;
      //  display.drawLine(i,53,i,53-barHeight*4,WHITE);
-
      }
    }
  }
@@ -200,81 +177,40 @@ void scanChannels(void)
 void outputChannels(void)
 {
  int norm = 0;
- 
 
-       
  // find the maximal count in channel array
  for( int i=0 ; i<CHANNELS ; i++)
    if( channel[i]>norm ) norm = channel[i];
-   
- // now output the data
- //Serial.print('|');
-  
- // u8g.firstPage();
-   
 
-    display.clearDisplay();
- display.setCursor(0,56);
-       display.print(start_ch);
- display.setCursor(110,56);
-       display.print(stop_ch);
+   display.clearDisplay();
+   display.setCursor(0,56);
+   display.print(start_ch);
+   display.setCursor(110,56);
+   display.print(stop_ch);
        
- for( int i=0 ; i<CHANNELS ; i++)
- {
-   int pos;
+   for( int i=0 ; i<CHANNELS ; i++)
+   {
+     int pos;
    
-   // calculate grey value position
-   if( norm!=0 ) pos = (channel[i]*10)/norm;
-   else          pos = 0;
+     // calculate grey value position
+     if( norm!=0 ) pos = (channel[i]*10)/norm;
+     else          pos = 0;
    
-   // boost low values
-   if( pos==0 && channel[i]>0 ) pos++;
+     // boost low values
+     if( pos==0 && channel[i]>0 ) pos++;
    
-   // clamp large values
-   if( pos>9 ) pos = 9;
- 
-   // print it out
-   //Serial.print(grey[pos]);
-   
-   // bar
-  
-   //u8g.setColorIndex(0);
-   //u8g.drawLine(i,0,i,64-(char)pos*9);
-   
-   //u8g.setColorIndex(1);
-  //   u8g.firstPage();
+     // clamp large values
+     if( pos>9 ) pos = 9;
+       display.drawLine(i,53,i,53-pos*4,WHITE);
 
-   
-   // do {u8g.drawPixel(i,64-pos*6);
-   //     u8g.drawLine(0,0,i,64-pos*6);
-   //   } while (u8g.nextPage());
-   
-
-     //if (pos>0){
-     display.drawLine(i,53,i,53-pos*4,WHITE);
-
-     //}         
-
-
-   channel[i] = 0;
- } 
+     channel[i] = 0;
+   } 
 
    display.setCursor(70,0);
-       display.print("Norm:");
+   display.print("Norm:");
    display.setCursor(100,0);
-       display.print(norm);
-  display.display();
-
- // indicate overall power
- //Serial.print("| ");
- //Serial.println(norm);
-}
-
-// give a visual reference between WLAN-channels and displayed data
-void printChannels(void)
-{
- // output approximate positions of WLAN-channels
- //Serial.println(">      1 2  3 4  5  6 7 8  9 10 11 12 13  14                     <");
+   display.print(norm);
+   display.display();
 }
 
 void setup()
@@ -286,28 +222,13 @@ void setup()
  
  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
  
- 
-  Serial.println("RFToy Display intialized ...");
-  Serial.println();
-  display.display();
-  
-  
-  
-  delay(500);
+ Serial.println("RFToy Display intialized ...");
+ Serial.println();
+ display.display();
+    
+ delay(500);
+ display.clearDisplay();
 
-
-  
-
-
-
- // Channel Layout
- // 0         1         2         3         4         5         6
- // 0123456789012345678901234567890123456789012345678901234567890123
- //       1 2  3 4  5  6 7 8  9 10 11 12 13  14                     |
- //
- Serial.println("Channel Layout");
- //printChannels();
- 
  // Setup SPI
  SPI.begin();
  SPI.setDataMode(SPI_MODE0);
@@ -318,9 +239,6 @@ void setup()
  pinMode(16,OUTPUT);
  pinMode(17,OUTPUT);
 
- 
- // Activate Chip Enable
- //pinMode(CE,OUTPUT);
  disable();
  
  // now start receiver
@@ -332,17 +250,7 @@ void setup()
  // make sure RF-section is set properly
  // - just write default value...
  setRegister(_NRF24_RF_SETUP,0x0F);
- 
- // reset line counter
- line = 0;
- 
- 
- 
- 
- 
- 
- 
- 
+
 }
 
 void loop()
@@ -352,13 +260,6 @@ void loop()
  
  // output the result
  outputChannels();
- 
- // output WLAN-channel reference every 12th line
- if( line++>12 )
- {
-   printChannels();
-   line = 0;
- }
 }
 
 
