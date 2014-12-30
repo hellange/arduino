@@ -7,31 +7,22 @@
 #define OLED_RESET 4
 Adafruit_SSD1306 display(OLED_RESET);
 
-// Poor Man's Wireless 2.4GHz Scanner
-//
-// uses an nRF24L01p connected to an Arduino
-//
-// Cables are:
-//     SS       -> 10
-//     MOSI     -> 11
-//     MISO     -> 12
-//     SCK      -> 13
-//
-// and CE       ->  9
-//
+// Based on Poor Man's Wireless 2.4GHz Scanner
 // created March 2011 by Rolf Henkel
-//
+// 
+// Modified by Helge Langehaug December 2014
+// to work with RFToy.
+// Uses Adafruit SSD1306 graphics library.
 
 
- // PORTB = 8..13 digital   10 er bit2
- // PORTC = 0..5 analog  
- // Mirf.csnPin = 16;
- // Mirf.cePin = 17;
- // RFTOY  PC2 analog ADC2  CSN  = PORTC bit 2
- // RFTOY  PC3 analog ADC3  CE = PORTC bit 3
+// PORTB = 8..13 digital   10 is bit2
+// PORTC = 0..5 analog  
+// Mirf.csnPin = 16;
+// Mirf.cePin = 17;
+// RFTOY  PC2 analog ADC2  CSN  = PORTC bit 2
+// RFTOY  PC3 analog ADC3  CE = PORTC bit 3
 
-
-#define CE  17
+#define CE 17
 
 // Array to hold Channel data
 #define CHANNELS  127
@@ -329,7 +320,7 @@ void setup()
 
  
  // Activate Chip Enable
- pinMode(CE,OUTPUT);
+ //pinMode(CE,OUTPUT);
  disable();
  
  // now start receiver
