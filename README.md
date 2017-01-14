@@ -5,13 +5,13 @@ weatherstation3 :
 Based on weatherstation2 as starting point for next generation. Status is presented at  http://weatherhelge.wordpress.com/.
 
 lcd_capacitive_multitouch:
-Testing capacitive multitouch on a 7" LCD
+Arduino and 7" LCD display with capacitive multitouch panel (ER-TFTM070-5) from EastRising (bought from buydisplay.com)
 
 capacitive_7in_panel:
-Standalone 7" capacitive multitouch panel from EastRising/BuyDisplay (ER-TPC070-6)
+Arduino and standalone 7" capacitive multitouch panel (ER-TPC070-6) from EastRising (bought from buydisplay.com)
 
 gameduino_test:
-testing Gameduino2
+Simple Gameduino2 test
 
 colortest:
 Creates color bars on LCD display. Shall be used to determine quality differences between LCDs.
