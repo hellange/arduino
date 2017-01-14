@@ -7,8 +7,8 @@ Based on weatherstation2 as starting point for next generation. Status is presen
 lcd_capacitive_multitouch:
 Testing capacitive multitouch on a 7" LCD
 
-XXX
-First test with ER-TPC070-6 capacitive touch panel from EastRising
+capacitive_7in_panel:
+Standalone 7" capacitive multitouch panel from EastRising/BuyDisplay (ER-TPC070-6)
 
 gameduino_test:
 testing Gameduino2
