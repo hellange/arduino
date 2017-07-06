@@ -5,10 +5,10 @@ weatherstation3 :
 Based on weatherstation2 as starting point for next generation. Status is presented at  http://weatherhelge.wordpress.com/.
 
 lcd_capacitive_multitouch:
-Arduino and 7" LCD display with capacitive multitouch panel (ER-TFTM070-5) from EastRising (bought from buydisplay.com)
+Arduino and 7" LCD display with capacitive multitouch panel (ER-TFTM070-5) from EastRising (bought from buydisplay.com), blog: https://weatherhelge.wordpress.com/2014/02/14/got-my-7-lcd-upn-running/
 
 capacitive_7in_panel:
-Arduino and standalone 7" capacitive multitouch panel (ER-TPC070-6) from EastRising (bought from buydisplay.com)
+Arduino and standalone 7" capacitive multitouch panel (ER-TPC070-6) from EastRising (bought from buydisplay.com), blog: https://weatherhelge.wordpress.com/2017/01/01/7-capacitive-multitouch-panel/
 
 gameduino_test:
 Simple Gameduino2 test
